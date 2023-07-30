@@ -1,24 +1,17 @@
 import 'kaios-gaia-l10n';
 import './index.css';
-import { HA_ENTITIES } from './env';
-import { homeAssistantService } from './home_assistant';
+import { runHomeAssistantService, HomeAssistantService} from './home_assistant';
 
-const KEY_TO_SERVICE_AND_ENTITY = {
-    "1": { service: "script/turn_on", entity: "garage_door" },
-    "2": { service: "switch/toggle", entity: "garage_led" },
+const KEY_TO_SERVICE = {
+    "1": HomeAssistantService("script/turn_on", "garage_door"),
+    "2": HomeAssistantService("switch/toggle", "garage_led" ),
     // ...
 }
 
 document.addEventListener("keydown", event => {
     console.log(event.KEY_TO_SERVICE)
-    if (event.key in hashmap) {
-        service = KEY_TO_SERVICE_AND_ENTITY[event.key].service;
-        entity = KEY_TO_SERVICE_AND_ENTITY[event.key].entity;
-        if (!(entity in HA_ENTITIES)) {
-            console.log(`entity unknown: ${entity}`);
-            return;
-        }
-        homeAssistantService(service, HA_ENTITIES[entity])
+    if (event.key in KEY_TO_SERVICE) {
+        runHomeAssistantService(KEY_TO_SERVICE[event.key]);
     }
 }
 );
