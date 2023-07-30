@@ -1,9 +1,9 @@
 {
-  "name": "KaiOS",
-  "description": "Demonstrates a basic KaiOS app",
+  "name": "HA",
+  "description": "Home assistant",
   "version": "0.0.1",
   "developer": {
-    "name": "Your name",
+    "name": "David Freire",
     "url": "http://example.com"
   },
   "launch_path": "/index.html",
@@ -22,12 +22,8 @@
   "orientation": "default",
   "locales": {
     "en-US": {
-      "name": "Template",
-      "description": "Template App for KaiOS"
-    },
-    "zh-CN": {
-      "name": "模板",
-      "description": "KaiOS模板应用"
+      "name": "HA",
+      "description": "Home Assistant"
     }
   },
   "default_locale": "en-US"

@@ -1,6 +1,15 @@
+# KaiOS Home Assistant
+
+Simple KaiOS application that allows calling home assistant services by button click.
+Will add more features and UI stuff if I have the time/need it. Open for colaboration, PR's are welcome!
+
+Only setup needed is creating a env.js file just like env.example.js. In docker/ there is a CORS proxy server because I could't make direct requests to HA RESTful API without any CORS shenanigans... (I'm using NGIX reverse proxy addon, maybe that's one of the reasons).
+
 This project was bootstrapped with [Create KaiOS App](https://github.com/jzhangs/create-kaios-app).
 
 ## Available Scripts
+
+Might need to run ```export NODE_OPTIONS=--openssl-legacy-provider``` to successfuly run any of the following yarn commands.
 
 In the project directory, you can run:
 
