@@ -3,8 +3,8 @@ import './index.css';
 import { runHomeAssistantService, HomeAssistantService } from './home_assistant';
 
 const KEY_TO_SERVICE = {
-    "1": HomeAssistantService("script/turn_on", "garage_door"),
-    "2": HomeAssistantService("switch/toggle", "garage_led"),
+    "1": new HomeAssistantService("script/turn_on", "garage_door"),
+    "2": new HomeAssistantService("switch/toggle", "garage_led"),
     // ...
 }
 

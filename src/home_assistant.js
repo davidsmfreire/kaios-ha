@@ -1,8 +1,10 @@
 import { TOKEN, SERVER_ADDRESS, CORS_PROXY, HA_ENTITIES } from './env';
 
-export function HomeAssistantService(service, entity) {
-    this.service = service;
-    this.entity = entity;
+export class HomeAssistantService {
+    constructor(service, entity) {
+        this.service = service;
+        this.entity = entity;
+    }
 }
 
 export async function runHomeAssistantService(service_obj) {
