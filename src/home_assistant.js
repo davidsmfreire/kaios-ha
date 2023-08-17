@@ -42,35 +42,27 @@ export async function runHomeAssistantService(service_obj) {
     let entity = service_obj.entity;
 
     if (!(entity in HA_ENTITIES)) {
-        console.log(`entity unknown: ${entity}`);
+        console.log(`Unknown entity: ${entity}`);
         return;
     }
 
     let entityID = HA_ENTITIES[entity];
 
-    try {
-        // const url = `${CORS_PROXY}/${SERVER_ADDRESS}/api/services/${service}`;
-        const url = `${SERVER_ADDRESS}/api/services/${service}`;
-        
-        console.log(url);
+    const url = `${SERVER_ADDRESS}/api/services/${service}`;
 
-        const method = 'POST';
-        const data = {
-            entity_id: entityID
-        };
-        const headers = {
-            'Authorization': `Bearer ${TOKEN}`,
-            'Content-Type': 'application/json'
-        };
+    const method = 'POST';
+    const data = {
+        entity_id: entityID
+    };
+    const headers = {
+        'Authorization': `Bearer ${TOKEN}`,
+        'Content-Type': 'application/json'
+    };
 
-        const response = await customFetch(method, url, data, headers);
-
-        if (response.ok) {
-            console.log('Service ran successfuly.');
-        } else {
-            console.error('Failed to run service:', response.statusText);
-        }
-    } catch (error) {
+    customFetch(method, url, data, headers)
+    .then(function (_response) {}) // do nothing with the response for now
+    .catch(function (error) {
         console.error('Error:', error.message);
-    }
+    });
+
 };
