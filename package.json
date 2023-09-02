@@ -8,7 +8,7 @@
     "react-dom": "^18.2.0"
   },
   "scripts": {
-    "start": "kaios-scripts start",
+    "start": "./cors_proxy_up.sh && NODE_OPTIONS=--openssl-legacy-provider kaios-scripts start",
     "build": "kaios-scripts build",
     "push": "kaios-scripts push",
     "test": "kaios-scripts test",
