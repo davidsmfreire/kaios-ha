@@ -9,7 +9,6 @@ const KEY_TO_SERVICE = {
 }
 
 document.addEventListener("keydown", event => {
-    console.log(event.KEY_TO_SERVICE)
     if (event.key in KEY_TO_SERVICE) {
         runHomeAssistantService(KEY_TO_SERVICE[event.key]);
     }
