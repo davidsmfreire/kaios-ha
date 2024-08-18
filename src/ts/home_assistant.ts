@@ -1,23 +1,20 @@
 import { TOKEN, SERVER_ADDRESS, HA_ENTITIES } from './env';
 
 export class HomeAssistantService {
-    constructor(service, entity) {
-        if (!(entity in HA_ENTITIES)) {
-            console.log(`Unknown entity: ${entity}`);
-            return;
-        }
+    service: string;
+    entity_id: string;
+
+    constructor(service: string, entity: string) {
         this.service = service;
-        this.entity = entity;
+        this.entity_id = HA_ENTITIES[entity];
     }
 
     async run() {
-        let entityID = HA_ENTITIES[this.entity];
-    
         const url = `${SERVER_ADDRESS}/api/services/${this.service}`;
-    
+
         const method = 'POST';
         const data = {
-            entity_id: entityID
+            entity_id: this.entity_id
         };
         const headers = {
             'Authorization': `Bearer ${TOKEN}`,
@@ -34,15 +31,13 @@ export class HomeAssistantService {
 
 }
 
-export async function getEntityState(entity) {
-    if (!(entity in HA_ENTITIES)) {
-        console.log(`Unknown entity: ${entity}`);
-        return;
-    }
+interface EntityState {
+    state: string
+}
 
-    let entityID = HA_ENTITIES[entity];
-
-    const url = `${SERVER_ADDRESS}/api/states/${entityID}`;
+export async function getEntityState(entity: string): Promise<EntityState | null> {
+    const entity_id = HA_ENTITIES[entity];
+    const url = `${SERVER_ADDRESS}/api/states/${entity_id}`;
 
     const method = 'GET';
     const data = null;
@@ -54,7 +49,7 @@ export async function getEntityState(entity) {
 
     return await customFetch(method, url, data, headers).then(
         (response) => {
-            return response;
+            return response as EntityState;
         }
     )
     .catch(function (error) {
@@ -66,6 +61,7 @@ export async function getEntityState(entity) {
 function customFetch(method, url, data, headers = {}) {
     return new Promise(function (resolve, reject) {
         // 'mozSystem: true' bypasses CORS in KaiOS (only works on old versions of Firefox)
+        // @ts-ignore
         var xhr = new XMLHttpRequest({ mozSystem: true });
 
         xhr.open(method, url, true);

@@ -6,8 +6,9 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 export const TOKEN="myLongTermToken";
-export const HA_ENTITIES= {
-    "garage_door": "script.garage_door",
+
+export const HA_ENTITIES = {
+    "garage_door": "script.garage_door_open",
     "garage_led": "switch.garage_light",
     "garage_door_sensor": "binary_sensor.garage_door",
 }
