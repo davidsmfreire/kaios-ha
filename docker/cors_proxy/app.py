@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+import traceback
 import flask
 import requests
 
@@ -22,10 +23,16 @@ def proxy(url):
         # Handle preflight request
         response = flask.Response()
     else:
-        print(flask.request.get_json())
-        print(flask.request.args)
+        request_json = None
+        if flask.request.is_json:
+            try:
+                request_json = flask.request.get_json()
+            except Exception as exc:
+                flask.current_app.logger.error(traceback.format_exc())
+        flask.current_app.logger.debug(request_json)
+        flask.current_app.logger.debug(flask.request.args)
         requests_function = method_requests_mapping[flask.request.method]
-        request = requests_function(url, stream=True, params=flask.request.args, headers=flask.request.headers,json=flask.request.get_json())
+        request = requests_function(url, stream=True, params=flask.request.args, headers=flask.request.headers,json=request_json)
         response = flask.Response(flask.stream_with_context(request.iter_content()),
                                 content_type=request.headers['content-type'],
                                 status=request.status_code)
