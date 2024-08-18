@@ -1,15 +1,22 @@
 import assert from 'assert';
-import { getEntityState, HomeAssistantService } from './ts/home_assistant';
+import { HomeAssistantService } from './ts/home_assistant';
 
-const KEY_TO_SERVICE = {
-    "1": new HomeAssistantService("script/turn_on", "garage_door"),
-    "2": new HomeAssistantService("switch/toggle", "garage_led"),
-    // ...
-}
+const ENTITIES = [
+    new HomeAssistantService("Garage Door", "garage_door", "script/turn_on", "1", "garage_door_sensor"),
+    new HomeAssistantService("Garage Light", "garage_led", "switch/toggle", "2", "garage_led"),
+]
 
-const ENTITIES_WITH_STATE = {
-    "garage_led": "Garage Light",
-    "garage_door_sensor": "Garage Door",
+
+var KEY_TO_SERVICE = [];
+
+(() => {
+    for (const entity of ENTITIES) {
+        KEY_TO_SERVICE[entity.key] = entity;
+    }
+})()
+
+function spanText(entity: HomeAssistantService, state: string) {
+    return `(${entity.key}) ${entity.name}: ${state}`
 }
 
 document.addEventListener("keydown", async event => {
@@ -25,34 +32,33 @@ document.addEventListener("keydown", async event => {
 
     assert(entities !== null);
 
-    for (var entity_name in ENTITIES_WITH_STATE) {
-        const entity_pretty_name = ENTITIES_WITH_STATE[entity_name];
-        const entity_state = await getEntityState(entity_name);
+    for (const entity of ENTITIES) {
+        const entity_state = await entity.getState();
         if (entity_state === null) {
             continue;
         }
         const node = document.createElement("SPAN");
-        const text = document.createTextNode(`${entity_pretty_name}: ${entity_state.state}`);
+        const text = document.createTextNode(spanText(entity, entity_state.state));
         node.appendChild(text);
-        node.setAttribute("id", entity_name);
+        node.setAttribute("id", entity_state.entity_id);
         entities.appendChild(node);
     }
 })();
 
 const updateEntityStates = async function () {
-    for (var entity_name in ENTITIES_WITH_STATE) {
-        const span = document.getElementById(entity_name);
-        if(span === null) {
-            continue;
-        }
-        const entity_state = await getEntityState(entity_name);
+    for (const entity of ENTITIES) {
+        const entity_state = await entity.getState();
         if (entity_state === null) {
             continue;
         }
-        span.textContent = `${ENTITIES_WITH_STATE[entity_name]}: ${entity_state.state}`
+        const span = document.getElementById(entity_state.entity_id);
+        if (span === null) {
+            continue;
+        }
+        span.textContent = spanText(entity, entity_state.state);
     }
 }
 
-setInterval(function() {
+setInterval(function () {
     updateEntityStates().catch(console.log);
 }, 1000);

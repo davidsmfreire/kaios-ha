@@ -1,12 +1,25 @@
 import { TOKEN, SERVER_ADDRESS, HA_ENTITIES } from './env';
 
-export class HomeAssistantService {
-    service: string;
-    entity_id: string;
+interface EntityState {
+    state: string
+    entity_id: string
+}
 
-    constructor(service: string, entity: string) {
+export class HomeAssistantService {
+    name: string;
+    entity_id: string;
+    service: string;
+    key: string;
+    state_entity_id?: string;
+
+    constructor(name: string, entity_alias: string, service: string, key: string, state_entity_alias?: string) {
+        this.name = name;
+        this.entity_id = HA_ENTITIES[entity_alias];
         this.service = service;
-        this.entity_id = HA_ENTITIES[entity];
+        this.key = key;
+        if (state_entity_alias) {
+            this.state_entity_id = HA_ENTITIES[state_entity_alias];
+        }
     }
 
     async run() {
@@ -29,33 +42,31 @@ export class HomeAssistantService {
         });
     }
 
-}
-
-interface EntityState {
-    state: string
-}
-
-export async function getEntityState(entity: string): Promise<EntityState | null> {
-    const entity_id = HA_ENTITIES[entity];
-    const url = `${SERVER_ADDRESS}/api/states/${entity_id}`;
-
-    const method = 'GET';
-    const data = null;
-    const headers = {
-        'Authorization': `Bearer ${TOKEN}`,
-        "Content-Type": "application/json"
-    };
-    console.log(`Calling ${url} with ${JSON.stringify(data)}`);
-
-    return await customFetch(method, url, data, headers).then(
-        (response) => {
-            return response as EntityState;
+    async getState(): Promise<EntityState | null> {
+        if(this.state_entity_id === undefined) {
+            return null;
         }
-    )
-    .catch(function (error) {
-        console.error('Error:', error.message);
-        return null;
-    });
+
+        const url = `${SERVER_ADDRESS}/api/states/${this.state_entity_id}`;
+    
+        const method = 'GET';
+        const data = null;
+        const headers = {
+            'Authorization': `Bearer ${TOKEN}`,
+            "Content-Type": "application/json"
+        };
+        console.log(`Calling ${url} with ${JSON.stringify(data)}`);
+    
+        return await customFetch(method, url, data, headers).then(
+            (response) => {
+                return response as EntityState;
+            }
+        )
+        .catch(function (error) {
+            console.error('Error:', error.message);
+            return null;
+        });
+    }
 }
 
 function customFetch(method, url, data, headers = {}) {
