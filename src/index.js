@@ -1,6 +1,4 @@
-import 'kaios-gaia-l10n';
-import './index.css';
-import { runHomeAssistantService, HomeAssistantService } from './home_assistant';
+import { getEntityState, HomeAssistantService } from './js/home_assistant';
 
 const KEY_TO_SERVICE = {
     "1": new HomeAssistantService("script/turn_on", "garage_door"),
@@ -8,9 +6,41 @@ const KEY_TO_SERVICE = {
     // ...
 }
 
-document.addEventListener("keydown", event => {
+const ENTITIES_WITH_STATE = {
+    "garage_led": "Garage Light",
+    "garage_door_sensor": "Garage Door",
+}
+
+document.addEventListener("keydown", async event => {
     if (event.key in KEY_TO_SERVICE) {
-        runHomeAssistantService(KEY_TO_SERVICE[event.key]);
+        const service = KEY_TO_SERVICE[event.key]
+        await service.run();
     }
 }
 );
+
+(async () => {
+    const entities = document.getElementById("entities");
+
+    for (var entity_name in ENTITIES_WITH_STATE) {
+        const entity_pretty_name = ENTITIES_WITH_STATE[entity_name];
+        const entity_state = await getEntityState(entity_name);
+        const node = document.createElement("SPAN");
+        const text = document.createTextNode(`${entity_pretty_name}: ${entity_state.state}`);
+        node.appendChild(text);
+        node.setAttribute("id", entity_name);
+        entities.appendChild(node);
+    }
+})();
+
+const updateEntityStates = async function () {
+    for (var entity_name in ENTITIES_WITH_STATE) {
+        const span = document.getElementById(entity_name);
+        const entity_state = await getEntityState(entity_name);
+        span.textContent = `${ENTITIES_WITH_STATE[entity_name]}: ${entity_state.state}`
+    }
+}
+
+setInterval(function() {
+    updateEntityStates().catch(console.log);
+}, 1000);

@@ -1,0 +1,14 @@
+header {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    background-color: #03a9f4;
+    padding: 3px 10px;
+}
+
+header span {
+    font-size: 16px;
+    font-weight: 600;
+    color: #EEEEEE !important;
+}

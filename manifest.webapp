@@ -1,0 +1,25 @@
+{
+  "version": "0.0.1",
+  "name": "HA",
+  "description": "Home assistant",
+  "type": "privileged",
+  "launch_path": "/index.html",
+  "icons": {
+    "56": "/assets/icons/app_56.png",
+    "112": "/assets/icons/app_112.png"
+  },
+  "developer": {
+    "name": "David Freire",
+    "url": "https://github.com/davidsmfreire"
+  },
+  "locales": {
+    "en-US": {
+      "name": "HA",
+      "description": "Home Assistant"
+    }
+  },
+  "default_locale": "en-US",
+  "permissions": {
+    "systemXHR": {}
+  }
+}

@@ -1,26 +1,19 @@
 {
   "name": "kaios-ha",
   "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "kaios-scripts": "0.0.9",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
+  "description": "KaiOS Home Assistant",
+  "main": "index.html",
   "scripts": {
-    "start": "./scripts/cors_proxy_up.sh && NODE_OPTIONS=--openssl-legacy-provider kaios-scripts start",
-    "build": "kaios-scripts build",
-    "push": "kaios-scripts push",
-    "test": "kaios-scripts test",
-    "eject": "kaios-scripts eject"
+    "start": "./scripts/cors_proxy_up.sh && parcel index.html --out-dir build --open && cp ./manifest.webapp ./build/ && cp -r ./assets/ ./build/",
+    "build": "parcel build index.html --out-dir build && cp ./manifest.webapp ./build/ && cp -r ./assets/ ./build/"
   },
-  "eslintConfig": {
-    "extends": "react-app"
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/core": "7.2.0",
+    "parcel-bundler": "^1.6.1"
   },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
+  "keywords": [
+    "vanilla",
+    "kaios"
   ]
 }
