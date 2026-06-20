@@ -38,14 +38,14 @@ Requires **Node 20+**.
 
 ```sh
 npm install
-npm run dev      # esbuild dev server on http://localhost:1234 (+ starts the CORS proxy)
+npm run dev      # esbuild watch + serve dev server on http://localhost:1234
 ```
 
 ### Scripts
 
 | Script | Does |
 |---|---|
-| `npm run dev` | Start the CORS proxy and an esbuild watch + serve dev server. |
+| `npm run dev` | esbuild watch + serve dev server (with the KaiOS device emulator). |
 | `npm run build` | Production bundle into `build/` (target `es2015` for Gecko 48, IIFE). |
 | `npm run package` | `build` + zip `build/` into `application.zip` (for make-kaios-install / OmniSD). |
 | `npm run flash` | `build` + install + relaunch on a connected KaiOS device (see Deploying). |
@@ -74,11 +74,16 @@ and stored in the device's `localStorage` — nothing secret lives in the source
 artifact. Servers are managed in-app: first-run onboarding, plus a Settings menu to add, edit and
 switch between them.
 
-### CORS during development
+### Connecting to Home Assistant in development
 
-On a real device, KaiOS's `mozSystem` XHR bypasses CORS, so no proxy is needed. On the desktop
-dev server it is, so `npm run dev` starts the small Flask proxy in `docker/`. See
-[`docker/README.md`](./docker/README.md).
+The app talks to HA over a single **WebSocket**, which isn't subject to CORS — `npm run dev`
+connects the browser straight to the HA URL you configure, no proxy needed. Two desktop gotchas:
+
+- **TLS** — a `wss://` URL needs a certificate the desktop browser trusts. If you hit a silent
+  "WebSocket connection failed", open the `https://…` URL once and accept the cert first, or just
+  use the plain `http://<lan-ip>:8123` URL (→ `ws://`) for local dev.
+- **Reverse proxy** — if HA sits behind nginx/duckdns, that proxy must forward the WebSocket
+  upgrade for `/api/websocket` (the device may reach HA by a different route than the desktop).
 
 ## Deploying to a device (no old Firefox needed)
 
