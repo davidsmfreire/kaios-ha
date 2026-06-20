@@ -59,7 +59,7 @@ export function createServerForm(opts: {
         focusIndex = k === 'up' ? Math.max(0, focusIndex - 1) : Math.min(inputs.length - 1, focusIndex + 1);
         inputs[focusIndex].focus();
       } else if (k === 'softRight') save();
-      else if (k === 'softLeft') onCancel();
+      else if (k === 'softLeft' || k === 'back') { onCancel(); return true; }
     },
   };
 }

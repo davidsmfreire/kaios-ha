@@ -45,12 +45,29 @@ describe('createStack', () => {
     const a = fakeScreen();
     stack.push(a);
     press('Backspace');
+    expect(a.handleKey).toHaveBeenCalledWith('back'); // root screen gets first crack at Back
     expect(a.unmount).not.toHaveBeenCalled(); // not popped at root
-    expect(close).toHaveBeenCalledTimes(1); // exits the app instead
+    expect(close).toHaveBeenCalledTimes(1); // didn't consume it → exits the app
     stack.destroy();
     expect(a.unmount).toHaveBeenCalledTimes(1); // destroy unmounts top
+    a.handleKey.mockClear();
     press('ArrowUp');
     expect(a.handleKey).not.toHaveBeenCalled(); // listener removed
+    close.mockRestore();
+  });
+
+  it('lets the top screen consume Back (no pop, no close) when handleKey returns true', () => {
+    const close = vi.spyOn(window, 'close').mockImplementation(() => {});
+    const container = document.createElement('div');
+    const stack = createStack(container);
+    const a = fakeScreen();
+    a.handleKey.mockReturnValue(true); // e.g. a form treating Back as Cancel
+    stack.push(a);
+    press('Backspace');
+    expect(a.handleKey).toHaveBeenCalledWith('back');
+    expect(a.unmount).not.toHaveBeenCalled(); // consumed → not popped
+    expect(close).not.toHaveBeenCalled(); // consumed → not closed
+    stack.destroy();
     close.mockRestore();
   });
 });

@@ -3,7 +3,9 @@ import { Key, mapKey } from './keys';
 export interface Screen {
   mount(container: HTMLElement): void;
   unmount(): void;
-  handleKey(k: Key): void;
+  // Return true to consume the key. Only consulted for 'back': a screen can
+  // treat Back as its own Cancel instead of letting the stack pop/close.
+  handleKey(k: Key): void | boolean;
 }
 
 export interface Stack {
@@ -51,6 +53,7 @@ export function createStack(container: HTMLElement): Stack {
     if (isEditable(document.activeElement) && !ROUTED_WHILE_EDITING.has(k)) return;
     e.preventDefault();
     if (k === 'back') {
+      if (top()?.handleKey(k)) return; // screen consumed Back (e.g. the form treats it as Cancel)
       if (screens.length > 1) pop();
       else window.close(); // root screen: exit the app (KaiOS back-to-close)
     } else {

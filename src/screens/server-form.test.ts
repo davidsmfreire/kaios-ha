@@ -54,6 +54,15 @@ describe('server form', () => {
     expect(onCancel).toHaveBeenCalled();
   });
 
+  it('Back is treated as Cancel and is consumed (so the stack does not quit)', () => {
+    const onCancel = vi.fn();
+    const form = createServerForm({ existing: null, onSave: vi.fn(), onCancel });
+    mountInto(form);
+    const consumed = form.handleKey('back');
+    expect(onCancel).toHaveBeenCalled();
+    expect(consumed).toBe(true);
+  });
+
   it('editing preserves id and pages', () => {
     const existing = { id: 's1', name: 'Old', baseUrl: 'http://o', token: 'x', pages: [{ id: 'p1', name: 'Home', tiles: [{ entityId: 'light.a', name: null, icon: null }] }] };
     const onSave = vi.fn();
