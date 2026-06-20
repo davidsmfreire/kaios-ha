@@ -1,16 +1,19 @@
 {
   "name": "kaios-ha",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "KaiOS Home Assistant",
   "main": "index.html",
   "scripts": {
-    "start": "./scripts/cors_proxy_up.sh && parcel index.html --out-dir build --open && cp ./manifest.webapp ./build/ && cp -r ./assets/ ./build/",
-    "build": "parcel build index.html --out-dir build && cp ./manifest.webapp ./build/ && cp -r ./assets/ ./build/"
+    "dev": "./scripts/cors_proxy_up.sh && node scripts/build.mjs --serve",
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "devDependencies": {
-    "@babel/core": "7.2.0",
-    "parcel-bundler": "^1.6.1",
-    "typescript": "^5.5.4"
+    "esbuild": "^0.21.0",
+    "jsdom": "^24.0.0",
+    "typescript": "^5.5.4",
+    "vitest": "^1.6.0"
   },
   "keywords": [
     "vanilla",
