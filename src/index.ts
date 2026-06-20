@@ -1,4 +1,4 @@
-import { loadConfig } from './store/config';
+import { startApp } from './app';
 
-const config = loadConfig();
-console.log(`KaiOS HA foundation loaded — ${config.servers.length} server(s) configured`);
+const root = document.getElementById('screen');
+if (root) startApp(root);
