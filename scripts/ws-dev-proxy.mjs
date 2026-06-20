@@ -16,6 +16,16 @@ export function startWsDevProxy(port) {
   const wss = new WebSocketServer({ host: '127.0.0.1', port });
 
   wss.on('connection', (client, req) => {
+    // Only the local dev page may use the relay. The SSRF risk is a foreign page
+    // scripting ws://localhost:<port>/?target=<internal host>; such pages carry a
+    // non-local Origin, so reject anything that isn't a localhost dev origin.
+    let originHost = null;
+    try { originHost = req.headers.origin ? new URL(req.headers.origin).hostname : null; } catch { /* malformed */ }
+    if (originHost !== 'localhost' && originHost !== '127.0.0.1') {
+      console.error(`[ws-dev-proxy] rejected connection from origin ${req.headers.origin || '(none)'}`);
+      client.close();
+      return;
+    }
     const target = new URL(req.url, 'http://localhost').searchParams.get('target');
     if (!target) {
       console.error('[ws-dev-proxy] connection without ?target= — closing');
