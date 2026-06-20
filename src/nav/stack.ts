@@ -40,10 +40,15 @@ export function createStack(container: HTMLElement): Stack {
     screen.mount(container);
   };
 
+  // Keys the app still drives while a text input is focused: field navigation
+  // (up/down) and softkeys (Save/Cancel). Everything else — typing, OK, cursor
+  // left/right, Backspace-delete — yields to the input for native text entry.
+  const ROUTED_WHILE_EDITING = new Set<Key>(['up', 'down', 'softLeft', 'softRight']);
+
   const onKeydown = (e: KeyboardEvent) => {
     const k = mapKey(e);
     if (k === 'other') return;
-    if (isEditable(document.activeElement) && k !== 'softLeft' && k !== 'softRight') return;
+    if (isEditable(document.activeElement) && !ROUTED_WHILE_EDITING.has(k)) return;
     e.preventDefault();
     if (k === 'back' && screens.length > 1) pop();
     else if (k !== 'back') top()?.handleKey(k);

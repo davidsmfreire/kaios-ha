@@ -4,7 +4,6 @@ import { el, clear } from '../ui/dom';
 import { renderField } from '../ui/form';
 import { renderSoftkeys } from '../ui/softkeys';
 import { showToast } from '../ui/toast';
-import { HaClient } from '../ha/client';
 import { ServerConfig } from '../store/types';
 
 export function createServerForm(opts: {
@@ -17,6 +16,8 @@ export function createServerForm(opts: {
   let nameI: HTMLInputElement;
   let urlI: HTMLInputElement;
   let tokenI: HTMLInputElement;
+  let inputs: HTMLInputElement[];
+  let focusIndex = 0;
 
   const render = () => {
     clear(container);
@@ -25,14 +26,12 @@ export function createServerForm(opts: {
     const url = renderField('URL', existing?.baseUrl ?? '', 'url');
     const token = renderField('Token', existing?.token ?? '', 'password');
     nameI = name.input; urlI = url.input; tokenI = token.input;
-    [name.row, url.row, token.row].forEach((r) => container.appendChild(r));
-    container.appendChild(renderSoftkeys('Cancel', 'Test', 'Save'));
-    nameI.focus();
-  };
-
-  const test = () => {
-    const client = new HaClient({ baseUrl: urlI.value, token: tokenI.value });
-    client.ping().then((ok) => showToast(container, ok ? 'Connected' : 'Connection failed'));
+    inputs = [nameI, urlI, tokenI];
+    const body = el('div', { class: 'list' });
+    [name.row, url.row, token.row].forEach((r) => body.appendChild(r));
+    container.appendChild(body);
+    container.appendChild(renderSoftkeys('Cancel', '', 'Save'));
+    inputs[focusIndex].focus();
   };
 
   const save = () => {
@@ -56,8 +55,10 @@ export function createServerForm(opts: {
     mount(c) { container = c; render(); },
     unmount() {},
     handleKey(k: Key) {
-      if (k === 'ok') test();
-      else if (k === 'softRight') save();
+      if (k === 'up' || k === 'down') {
+        focusIndex = k === 'up' ? Math.max(0, focusIndex - 1) : Math.min(inputs.length - 1, focusIndex + 1);
+        inputs[focusIndex].focus();
+      } else if (k === 'softRight') save();
       else if (k === 'softLeft') onCancel();
     },
   };

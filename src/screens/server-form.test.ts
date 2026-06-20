@@ -4,6 +4,22 @@ import { createServerForm } from './server-form';
 const mountInto = (s: { mount: (c: HTMLElement) => void }) => { const c = document.createElement('div'); document.body.appendChild(c); s.mount(c); return c; };
 
 describe('server form', () => {
+  it('up/down move focus between fields without losing typed values', () => {
+    const form = createServerForm({ existing: null, onSave: vi.fn(), onCancel: vi.fn() });
+    const c = mountInto(form);
+    const inputs = c.querySelectorAll('input');
+    (inputs[0] as HTMLInputElement).value = 'Cabin';
+    form.handleKey('down');
+    expect(document.activeElement).toBe(inputs[1]);
+    form.handleKey('down');
+    expect(document.activeElement).toBe(inputs[2]);
+    form.handleKey('down'); // clamp at last
+    expect(document.activeElement).toBe(inputs[2]);
+    form.handleKey('up');
+    expect(document.activeElement).toBe(inputs[1]);
+    expect((inputs[0] as HTMLInputElement).value).toBe('Cabin'); // not lost to a re-render
+  });
+
   it('saves a new server built from the field values', () => {
     const onSave = vi.fn();
     const form = createServerForm({ existing: null, onSave, onCancel: vi.fn() });

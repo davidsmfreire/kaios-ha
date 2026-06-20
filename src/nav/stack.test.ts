@@ -55,7 +55,7 @@ describe('createStack', () => {
 afterEach(() => { document.body.innerHTML = ''; });
 
 describe('createStack — editable + reset', () => {
-  it('yields non-softkey keys when an input is focused, but still routes softkeys', () => {
+  it('yields typing/OK to a focused input but routes field-nav + softkeys', () => {
     const container = document.createElement('div');
     document.body.appendChild(container);
     const stack = createStack(container);
@@ -64,10 +64,12 @@ describe('createStack — editable + reset', () => {
     const input = document.createElement('input');
     document.body.appendChild(input);
     input.focus();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    expect(screen.handleKey).not.toHaveBeenCalled(); // OK yielded to input
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
-    expect(screen.handleKey).not.toHaveBeenCalled(); // yielded to input
+    expect(screen.handleKey).toHaveBeenCalledWith('down'); // field-nav routed to form
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'SoftRight' }));
-    expect(screen.handleKey).toHaveBeenCalledWith('softRight'); // softkey still routed
+    expect(screen.handleKey).toHaveBeenCalledWith('softRight'); // softkey routed
     stack.destroy();
   });
 
