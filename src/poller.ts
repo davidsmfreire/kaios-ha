@@ -14,6 +14,7 @@ export function createPoller(opts: {
   onOk?: () => void;
 }): Poller {
   let timer: ReturnType<typeof setInterval> | null = null;
+  let started = false;
 
   const fetch = () => {
     opts.client.getStates().then(
@@ -47,11 +48,14 @@ export function createPoller(opts: {
 
   return {
     start() {
+      if (started) return;
+      started = true;
       fetch();
       schedule();
       document.addEventListener('visibilitychange', onVisibility);
     },
     stop() {
+      started = false;
       unschedule();
       document.removeEventListener('visibilitychange', onVisibility);
     },

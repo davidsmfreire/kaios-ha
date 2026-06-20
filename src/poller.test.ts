@@ -32,4 +32,16 @@ describe('createPoller', () => {
     expect(onError).toHaveBeenCalledTimes(1);
     poller.stop();
   });
+
+  it('start() is idempotent — a second start does not double-schedule', async () => {
+    const client = { getStates: vi.fn().mockResolvedValue(states) };
+    const poller = createPoller({ client, cache: new StateCache(), intervalMs: 1000 });
+    poller.start();
+    poller.start(); // second start must be a no-op
+    await vi.advanceTimersByTimeAsync(0);
+    expect(client.getStates).toHaveBeenCalledTimes(1); // only one immediate fetch
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(client.getStates).toHaveBeenCalledTimes(2); // single interval
+    poller.stop();
+  });
 });
