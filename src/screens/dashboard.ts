@@ -20,8 +20,9 @@ export function createDashboard(opts: {
   serverName: string;
   intervalMs: number;
   onOpenDetail: (tile: TileConfig) => void;
+  onMenu?: () => void;
 }): Screen {
-  const { client, cache, page, serverName, intervalMs, onOpenDetail } = opts;
+  const { client, cache, page, serverName, intervalMs, onOpenDetail, onMenu } = opts;
   let focusIndex = 0;
   let container: HTMLElement;
   let grid: HTMLElement;
@@ -79,6 +80,8 @@ export function createDashboard(opts: {
         renderGrid();
       } else if (k === 'ok') {
         act();
+      } else if (k === 'softLeft') {
+        onMenu?.();
       }
     },
   };
