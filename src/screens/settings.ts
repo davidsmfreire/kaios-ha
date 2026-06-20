@@ -1,6 +1,6 @@
 import { Key } from '../nav/keys';
 import { Screen } from '../nav/stack';
-import { el, clear } from '../ui/dom';
+import { el, clear, keepInView } from '../ui/dom';
 import { renderSoftkeys } from '../ui/softkeys';
 import { AppConfig } from '../store/types';
 
@@ -32,6 +32,7 @@ export function createSettings(opts: {
     labels.forEach((label, i) => list.appendChild(el('div', { class: i === focusIndex ? 'item focus' : 'item', text: label })));
     container.appendChild(list);
     container.appendChild(renderSoftkeys('Back', 'Select', ''));
+    keepInView(list, list.children[focusIndex] as HTMLElement | undefined);
   };
 
   return {

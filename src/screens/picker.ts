@@ -1,6 +1,6 @@
 import { Key } from '../nav/keys';
 import { Screen } from '../nav/stack';
-import { el, clear } from '../ui/dom';
+import { el, clear, keepInView } from '../ui/dom';
 import { renderSoftkeys } from '../ui/softkeys';
 import { showToast } from '../ui/toast';
 import { getDomain, domainOf } from '../domains/registry';
@@ -33,6 +33,7 @@ export function createPicker(opts: {
     });
     container.appendChild(list);
     container.appendChild(renderSoftkeys('Back', 'Toggle', 'Done'));
+    keepInView(list, list.children[focusIndex] as HTMLElement | undefined);
   };
 
   return {

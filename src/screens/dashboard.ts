@@ -3,7 +3,7 @@ import { nextIndex } from '../nav/grid-focus';
 import { renderTile } from '../ui/tile';
 import { renderSoftkeys } from '../ui/softkeys';
 import { setOffline } from '../ui/banner';
-import { el, clear } from '../ui/dom';
+import { el, clear, keepInView } from '../ui/dom';
 import { createPoller, Poller } from '../poller';
 import { getDomain } from '../domains/registry';
 import { StateCache } from '../store/state';
@@ -32,6 +32,7 @@ export function createDashboard(opts: {
   const renderGrid = () => {
     clear(grid);
     page.tiles.forEach((tile, i) => grid.appendChild(renderTile(tile, cache.get(tile.entityId), i === focusIndex)));
+    keepInView(grid, grid.children[focusIndex] as HTMLElement | undefined);
   };
 
   const renderAll = () => {
