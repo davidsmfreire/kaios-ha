@@ -30,6 +30,7 @@ const buildOptions = {
   outfile: `${outdir}/index.js`,
   minify: !serve,
   sourcemap: serve,
+  define: { __DEV__: String(serve) },
 };
 
 if (serve) {
