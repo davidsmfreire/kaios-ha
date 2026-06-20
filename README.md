@@ -76,29 +76,21 @@ switch between them.
 
 ### Connecting to Home Assistant in development
 
-The app talks to HA over a single **WebSocket**, which isn't subject to CORS — `npm run dev`
-connects the browser straight to the HA URL you configure, no proxy needed. Two desktop gotchas:
-
-- **TLS** — a `wss://` URL needs a certificate the desktop browser trusts. If you hit a silent
-  "WebSocket connection failed", open the `https://…` URL once and accept the cert first, or just
-  use the plain `http://<lan-ip>:8123` URL (→ `ws://`) for local dev.
-- **Reverse proxy** — if HA sits behind nginx/duckdns, that proxy must forward the WebSocket
-  upgrade for `/api/websocket` (the device may reach HA by a different route than the desktop).
-
-**Remote HTTPS HA** (no LAN `http://` URL available): the desktop browser's cert-trust and Origin
-checks block a direct `wss://` that the KaiOS device accepts fine. Set `HA_DEV_TARGET` — `npm run
-dev` then starts a local WS proxy **and** routes the app's socket through it automatically. Your
-saved server config and token are untouched:
+The app talks to HA over a single **WebSocket** (no CORS). On the desktop a browser enforces
+cert-trust and Origin on `wss://` that the KaiOS device doesn't, so to make **any** HA URL —
+including a remote HTTPS one — just work, `npm run dev` runs a small local WS proxy and routes the
+app's socket through it automatically. Configure your real HA URL + token in the app as usual;
+there's nothing else to set:
 
 ```sh
-HA_DEV_TARGET=https://ha.example.com npm run dev
+npm run dev   # WS proxy starts on ws://localhost:8765; the app tunnels through it
 ```
 
-In dev the app connects to `ws://localhost:8765`, which the proxy relays to `wss://ha.example.com`
-**server-side**, where browser cert/Origin rules don't apply. TLS stays verified; for a self-signed
-cert add `HA_DEV_INSECURE_TLS=1` (dev only — the HA token is relayed over this link). Override the
-port with `HA_DEV_PROXY_PORT`. Watch the `npm run dev` console for `[ws-dev-proxy] upstream error`
-if the relay can't reach HA.
+The proxy connects to HA **server-side**, where browser cert/Origin rules don't apply. TLS stays
+verified — for a self-signed cert run `HA_DEV_INSECURE_TLS=1 npm run dev` (dev only; the HA token is
+relayed over this link). Override the port with `HA_DEV_PROXY_PORT`, and watch the `npm run dev`
+console for `[ws-dev-proxy] upstream error` if the relay can't reach HA. (Dev only — production
+builds connect to HA directly.)
 
 ## Deploying to a device (no old Firefox needed)
 
