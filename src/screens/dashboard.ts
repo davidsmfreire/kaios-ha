@@ -4,30 +4,28 @@ import { renderTile } from '../ui/tile';
 import { renderSoftkeys } from '../ui/softkeys';
 import { setOffline } from '../ui/banner';
 import { el, clear, keepInView } from '../ui/dom';
-import { createPoller, Poller } from '../poller';
 import { getDomain } from '../domains/registry';
 import { StateCache } from '../store/state';
-import { HaClient } from '../ha/client';
+import { HaSocket } from '../ha/socket';
 import { PageConfig, TileConfig } from '../store/types';
 import { Screen } from '../nav/stack';
 
 const COLS = 2;
 
 export function createDashboard(opts: {
-  client: HaClient;
+  socket: HaSocket;
   cache: StateCache;
   page: PageConfig;
   serverName: string;
-  intervalMs: number;
   onOpenDetail: (tile: TileConfig) => void;
   onMenu?: () => void;
 }): Screen {
-  const { client, cache, page, serverName, intervalMs, onOpenDetail, onMenu } = opts;
+  const { socket, cache, page, serverName, onOpenDetail, onMenu } = opts;
   let focusIndex = 0;
   let container: HTMLElement;
   let grid: HTMLElement;
-  let unsubscribe: (() => void) | null = null;
-  let poller: Poller | null = null;
+  let unsubCache: (() => void) | null = null;
+  let unsubStatus: (() => void) | null = null;
 
   const renderGrid = () => {
     clear(grid);
@@ -56,24 +54,19 @@ export function createDashboard(opts: {
     const entity = cache.get(tile.entityId) ?? { entity_id: tile.entityId, state: 'off', attributes: {} };
     const call = domain.primaryAction(entity);
     if (call.service === 'toggle') cache.applyOptimistic(tile.entityId, entity.state === 'on' ? 'off' : 'on');
-    client.callService(call).catch(() => renderGrid());
+    socket.callService(call).catch(() => renderGrid());
   };
 
   return {
     mount(c: HTMLElement) {
       container = c;
       renderAll();
-      unsubscribe = cache.subscribe(renderGrid);
-      poller = createPoller({
-        client, cache, intervalMs,
-        onError: () => setOffline(container, true),
-        onOk: () => setOffline(container, false),
-      });
-      poller.start();
+      unsubCache = cache.subscribe(renderGrid);
+      unsubStatus = socket.onStatus((connected) => setOffline(container, !connected));
     },
     unmount() {
-      poller?.stop();
-      unsubscribe?.();
+      unsubCache?.();
+      unsubStatus?.();
     },
     handleKey(k: Key) {
       if (k === 'up' || k === 'down' || k === 'left' || k === 'right') {

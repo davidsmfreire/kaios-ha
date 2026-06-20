@@ -2,15 +2,17 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { startApp } from './app';
 import { saveConfig, DEFAULT_CONFIG } from './store/config';
 
-beforeEach(() => { localStorage.clear(); document.body.innerHTML = ''; vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); });
+class MockWS { onopen = null; onclose = null; onerror = null; onmessage = null; constructor(public url: string) {} send() {} close() {} }
+
+beforeEach(() => { localStorage.clear(); document.body.innerHTML = ''; vi.stubGlobal('WebSocket', MockWS); });
+afterEach(() => { vi.unstubAllGlobals(); });
 
 describe('startApp', () => {
   it('first run with no servers shows the add-server form', () => {
     const root = document.createElement('div');
     document.body.appendChild(root);
     startApp(root);
-    expect(root.querySelector('.field')).not.toBeNull(); // form fields rendered
+    expect(root.querySelector('.field')).not.toBeNull();
     expect(root.textContent).toContain('Add server');
   });
 

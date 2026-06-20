@@ -7,12 +7,16 @@ const states = [
 ];
 const flush = () => new Promise((r) => setTimeout(r, 0));
 const mountInto = (s: { mount: (c: HTMLElement) => void }) => { const c = document.createElement('div'); s.mount(c); return c; };
+const makeSocket = (over: Partial<{ getStates: any; getLovelace: any }> = {}) => ({
+  start: vi.fn(), close: vi.fn(), callService: vi.fn(), onStatus: vi.fn().mockReturnValue(() => {}),
+  getStates: over.getStates ?? vi.fn().mockResolvedValue(states),
+  getLovelace: over.getLovelace ?? vi.fn().mockResolvedValue({ order: [], names: new Map() }),
+});
 
 describe('picker', () => {
   it('lists discovered entities and returns selected tiles on Done', async () => {
-    const client = { getStates: vi.fn().mockResolvedValue(states), callService: vi.fn(), ping: vi.fn() };
     const onDone = vi.fn();
-    const picker = createPicker({ client: client as any, initial: [], onDone, onCancel: vi.fn() });
+    const picker = createPicker({ socket: makeSocket() as any, initial: [], onDone, onCancel: vi.fn() });
     mountInto(picker);
     await flush();
     picker.handleKey('ok'); // toggle first (light.a) on
@@ -21,9 +25,8 @@ describe('picker', () => {
   });
 
   it('preselects entities from initial', async () => {
-    const client = { getStates: vi.fn().mockResolvedValue(states), callService: vi.fn(), ping: vi.fn() };
     const onDone = vi.fn();
-    const picker = createPicker({ client: client as any, initial: [{ entityId: 'switch.b', name: null, icon: null }], onDone, onCancel: vi.fn() });
+    const picker = createPicker({ socket: makeSocket() as any, initial: [{ entityId: 'switch.b', name: null, icon: null }], onDone, onCancel: vi.fn() });
     mountInto(picker);
     await flush();
     picker.handleKey('softRight');
@@ -31,11 +34,10 @@ describe('picker', () => {
   });
 
   it('lists lovelace entities first with their dashboard names, showing all', async () => {
-    const client = { getStates: vi.fn().mockResolvedValue(states), callService: vi.fn(), ping: vi.fn() };
     const onDone = vi.fn();
     const picker = createPicker({
-      client: client as any, initial: [], onDone, onCancel: vi.fn(),
-      fetchLovelace: () => Promise.resolve({ order: ['switch.b'], names: new Map([['switch.b', 'My Switch']]) }),
+      socket: makeSocket({ getLovelace: vi.fn().mockResolvedValue({ order: ['switch.b'], names: new Map([['switch.b', 'My Switch']]) }) }) as any,
+      initial: [], onDone, onCancel: vi.fn(),
     });
     const c = mountInto(picker);
     await flush();
@@ -48,9 +50,8 @@ describe('picker', () => {
   });
 
   it('cancels on discovery failure', async () => {
-    const client = { getStates: vi.fn().mockRejectedValue(new Error('x')), callService: vi.fn(), ping: vi.fn() };
     const onCancel = vi.fn();
-    const picker = createPicker({ client: client as any, initial: [], onDone: vi.fn(), onCancel });
+    const picker = createPicker({ socket: makeSocket({ getStates: vi.fn().mockRejectedValue(new Error('x')) }) as any, initial: [], onDone: vi.fn(), onCancel });
     mountInto(picker);
     await flush();
     expect(onCancel).toHaveBeenCalled();

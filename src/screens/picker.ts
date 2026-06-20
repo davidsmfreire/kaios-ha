@@ -4,19 +4,17 @@ import { el, clear, keepInView } from '../ui/dom';
 import { renderSoftkeys } from '../ui/softkeys';
 import { showToast } from '../ui/toast';
 import { getDomain, domainOf } from '../domains/registry';
-import { HaClient } from '../ha/client';
+import { HaSocket } from '../ha/socket';
 import { EntityState } from '../ha/types';
-import { LovelaceInfo } from '../ha/lovelace';
 import { TileConfig } from '../store/types';
 
 export function createPicker(opts: {
-  client: HaClient;
+  socket: HaSocket;
   initial: TileConfig[];
   onDone: (tiles: TileConfig[]) => void;
   onCancel: () => void;
-  fetchLovelace?: () => Promise<LovelaceInfo>;
 }): Screen {
-  const { client, initial, onDone, onCancel, fetchLovelace } = opts;
+  const { socket, initial, onDone, onCancel } = opts;
   const selected = new Set(initial.map((t) => t.entityId));
   let container: HTMLElement;
   let entities: EntityState[] = [];
@@ -47,12 +45,10 @@ export function createPicker(opts: {
       container = c;
       clear(container);
       container.appendChild(el('div', { class: 'empty', text: 'Discovering…' }));
-      const noLovelace: LovelaceInfo = { order: [], names: new Map() };
-      Promise.all([client.getStates(), fetchLovelace ? fetchLovelace() : Promise.resolve(noLovelace)]).then(
+      Promise.all([socket.getStates(), socket.getLovelace()]).then(
         ([s, lovelace]) => {
           names = lovelace.names;
           const inLovelace = new Set(lovelace.order);
-          // Show all entities, but list the ones on the Lovelace dashboard first.
           entities = inLovelace.size
             ? [...s.filter((e) => inLovelace.has(e.entity_id)), ...s.filter((e) => !inLovelace.has(e.entity_id))]
             : s;

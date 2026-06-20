@@ -5,13 +5,13 @@ import { renderSoftkeys } from '../ui/softkeys';
 import { showToast } from '../ui/toast';
 import { getDomain, domainOf } from '../domains/registry';
 import { StateCache } from '../store/state';
-import { HaClient } from '../ha/client';
+import { HaSocket } from '../ha/socket';
 import { TileConfig } from '../store/types';
 
 const CLIMATE_MODES = ['off', 'heat', 'cool', 'auto'];
 
-export function createDetail(opts: { client: HaClient; cache: StateCache; tile: TileConfig; onBack: () => void }): Screen {
-  const { client, cache, tile, onBack } = opts;
+export function createDetail(opts: { socket: HaSocket; cache: StateCache; tile: TileConfig; onBack: () => void }): Screen {
+  const { socket, cache, tile, onBack } = opts;
   const id = tile.entityId;
   const serviceDomain = domainOf(id);
   const domain = getDomain(id);
@@ -27,7 +27,7 @@ export function createDetail(opts: { client: HaClient; cache: StateCache; tile: 
     ?? (entity && typeof entity.attributes.friendly_name === 'string' ? (entity.attributes.friendly_name as string) : id);
 
   const call = (service: string, data: Record<string, unknown>, toast: string) => {
-    client.callService({ domain: serviceDomain, service, data: { entity_id: id, ...data } })
+    socket.callService({ domain: serviceDomain, service, data: { entity_id: id, ...data } })
       .then(() => showToast(container, toast))
       .catch(() => showToast(container, 'Failed'));
   };
@@ -64,10 +64,7 @@ export function createDetail(opts: { client: HaClient; cache: StateCache; tile: 
   };
 
   return {
-    mount(c: HTMLElement) {
-      container = c;
-      render();
-    },
+    mount(c: HTMLElement) { container = c; render(); },
     unmount() {},
     handleKey(k: Key) {
       if (k === 'softLeft') { onBack(); return; }
