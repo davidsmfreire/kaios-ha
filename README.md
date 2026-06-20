@@ -44,7 +44,8 @@ npm run dev      # esbuild dev server on http://localhost:1234 (+ starts the COR
 | `npm run dev` | Start the CORS proxy and an esbuild watch + serve dev server. |
 | `npm run build` | Production bundle into `build/` (target `es2015` for Gecko 48, IIFE). |
 | `npm run package` | `build` + zip `build/` into `application.zip` (for make-kaios-install / OmniSD). |
-| `npm run flash` | `build` + install to a connected KaiOS device via gdeploy (see Deploying). |
+| `npm run flash` | `build` + install + relaunch on a connected KaiOS device (see Deploying). |
+| `npm run flash-configure` | `flash`, but first prompts for one or more servers and seeds the config — skips the in-app onboarding. |
 | `npm run typecheck` | `tsc --noEmit`. |
 | `npm test` | Run the Vitest suite. |
 
@@ -91,6 +92,21 @@ installation goes over the **KaiOS remote debugging protocol** via ADB. [gdeploy
 protocol with a fixed app id, and **relaunches** the app (needs the system `adb` tool). The relaunch
 matters: KaiOS otherwise keeps the old instance running and shows its pre-flash page. The separate
 `application.zip` from `npm run package` is for the other installers below.
+
+To skip the in-app onboarding, `npm run flash-configure` prompts for **one or more** servers
+(name / URL / token; first one becomes active), flashes, and seeds the config on the device — it
+then opens straight to the entity picker:
+
+```
+$ npm run flash-configure
+Server 1 name [Home]: Cabin
+  HA base URL (e.g. http://homeassistant.local:8123): http://cabin.local:8123
+  Long-lived token: <token>
+Add another server? [y/N]: y
+Server 2 name [Home]: Home
+  ...
+Add another server? [y/N]: n
+```
 
 > **Troubleshooting — white/blank screen:** almost always a stale install. Older flashes created a
 > new random app id each time; an interrupted one could leave a half-extracted copy whose `index.js`

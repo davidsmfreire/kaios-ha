@@ -8,6 +8,7 @@
     "build": "node scripts/build.mjs",
     "package": "npm run build && (cd build && rm -f ../application.zip && zip -r -X -q ../application.zip .)",
     "flash": "npm run build && node scripts/flash.mjs",
+    "flash-configure": "npm run build && node scripts/flash-configure.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
