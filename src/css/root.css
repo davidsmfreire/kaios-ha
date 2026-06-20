@@ -12,3 +12,13 @@ body,
   overflow: hidden;
   background-color: #181818 !important;
 }
+
+#root {
+  height: 100vh;
+}
+#screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+#screen .grid { flex: 1 1 auto; }
