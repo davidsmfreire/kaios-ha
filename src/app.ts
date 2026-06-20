@@ -2,7 +2,7 @@ import { loadConfig } from './store/config';
 import { StateCache } from './store/state';
 import { HaClient } from './ha/client';
 import { createDashboard } from './screens/dashboard';
-import { mapKey } from './nav/keys';
+import { createStack } from './nav/stack';
 import { el } from './ui/dom';
 
 export function startApp(root: HTMLElement): void {
@@ -17,16 +17,10 @@ export function startApp(root: HTMLElement): void {
 
   const client = new HaClient({ baseUrl: server.baseUrl, token: server.token });
   const cache = new StateCache();
+  const stack = createStack(root);
   const dashboard = createDashboard({
-    root, client, cache, page, serverName: server.name, intervalMs: config.settings.pollIntervalMs,
+    client, cache, page, serverName: server.name, intervalMs: config.settings.pollIntervalMs,
+    onOpenDetail: () => {},
   });
-  dashboard.mount();
-
-  document.addEventListener('keydown', (e) => {
-    const k = mapKey(e);
-    if (k !== 'other') {
-      e.preventDefault();
-      dashboard.handleKey(k);
-    }
-  });
+  stack.push(dashboard);
 }

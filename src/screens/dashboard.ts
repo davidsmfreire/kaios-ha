@@ -2,72 +2,71 @@ import { Key } from '../nav/keys';
 import { nextIndex } from '../nav/grid-focus';
 import { renderTile } from '../ui/tile';
 import { renderSoftkeys } from '../ui/softkeys';
+import { setOffline } from '../ui/banner';
 import { el, clear } from '../ui/dom';
 import { createPoller, Poller } from '../poller';
 import { getDomain } from '../domains/registry';
 import { StateCache } from '../store/state';
 import { HaClient } from '../ha/client';
-import { PageConfig } from '../store/types';
+import { PageConfig, TileConfig } from '../store/types';
+import { Screen } from '../nav/stack';
 
 const COLS = 2;
 
-export interface Dashboard {
-  mount(): void;
-  unmount(): void;
-  handleKey(k: Key): void;
-}
-
 export function createDashboard(opts: {
-  root: HTMLElement;
   client: HaClient;
   cache: StateCache;
   page: PageConfig;
   serverName: string;
   intervalMs: number;
-}): Dashboard {
-  const { root, client, cache, page, serverName, intervalMs } = opts;
+  onOpenDetail: (tile: TileConfig) => void;
+}): Screen {
+  const { client, cache, page, serverName, intervalMs, onOpenDetail } = opts;
   let focusIndex = 0;
+  let container: HTMLElement;
   let grid: HTMLElement;
   let unsubscribe: (() => void) | null = null;
   let poller: Poller | null = null;
 
   const renderGrid = () => {
     clear(grid);
-    page.tiles.forEach((tile, i) => {
-      grid.appendChild(renderTile(tile, cache.get(tile.entityId), i === focusIndex));
-    });
+    page.tiles.forEach((tile, i) => grid.appendChild(renderTile(tile, cache.get(tile.entityId), i === focusIndex)));
   };
 
   const renderAll = () => {
-    clear(root);
+    clear(container);
     const header = el('div', { class: 'ha-header' });
     header.appendChild(el('span', { text: page.name }));
     header.appendChild(el('span', { class: 'dots', text: serverName }));
-    root.appendChild(header);
+    container.appendChild(header);
     grid = el('div', { class: 'grid' });
-    root.appendChild(grid);
+    container.appendChild(grid);
     renderGrid();
-    root.appendChild(renderSoftkeys('Menu', 'Toggle', ''));
+    container.appendChild(renderSoftkeys('Menu', 'OK', ''));
   };
 
   const act = () => {
     const tile = page.tiles[focusIndex];
     if (!tile) return;
     const domain = getDomain(tile.entityId);
+    if (domain.detail) { onOpenDetail(tile); return; }
     if (!domain.primaryAction) return;
     const entity = cache.get(tile.entityId) ?? { entity_id: tile.entityId, state: 'off', attributes: {} };
     const call = domain.primaryAction(entity);
-    if (call.service === 'toggle') {
-      cache.applyOptimistic(tile.entityId, entity.state === 'on' ? 'off' : 'on');
-    }
+    if (call.service === 'toggle') cache.applyOptimistic(tile.entityId, entity.state === 'on' ? 'off' : 'on');
     client.callService(call).catch(() => renderGrid());
   };
 
   return {
-    mount() {
+    mount(c: HTMLElement) {
+      container = c;
       renderAll();
       unsubscribe = cache.subscribe(renderGrid);
-      poller = createPoller({ client, cache, intervalMs });
+      poller = createPoller({
+        client, cache, intervalMs,
+        onError: () => setOffline(container, true),
+        onOk: () => setOffline(container, false),
+      });
       poller.start();
     },
     unmount() {
