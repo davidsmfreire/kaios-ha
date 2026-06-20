@@ -26,8 +26,10 @@ export function createHaSocket(opts: {
   let stateSubId = 0;
   let attempts = 0;
   let stopped = false;
+  let authed = false;
   let timer: ReturnType<typeof setTimeout> | null = null;
   const pending = new Map<number, { resolve: (v: unknown) => void; reject: (e: unknown) => void }>();
+  const queue: Array<{ id: number; type: string; extra: object }> = [];
   const statusSubs = new Set<(connected: boolean) => void>();
 
   const setStatus = (connected: boolean) => statusSubs.forEach((cb) => cb(connected));
@@ -37,12 +39,20 @@ export function createHaSocket(opts: {
     pending.clear();
   };
 
+  const flushQueue = () => {
+    queue.forEach((q) => ws!.send(JSON.stringify({ id: q.id, type: q.type, ...q.extra })));
+    queue.length = 0;
+  };
+
   const command = <T>(type: string, extra: object = {}): Promise<T> => {
-    if (!ws || ws.readyState !== 1) return Promise.reject(new Error('socket not open'));
     const id = nextId++;
     return new Promise<T>((resolve, reject) => {
       pending.set(id, { resolve: resolve as (v: unknown) => void, reject });
-      ws!.send(JSON.stringify({ id, type, ...extra }));
+      if (authed && ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({ id, type, ...extra }));
+      } else {
+        queue.push({ id, type, extra });
+      }
     });
   };
 
@@ -58,12 +68,14 @@ export function createHaSocket(opts: {
     if (msg.type === 'auth_required') { ws!.send(JSON.stringify({ type: 'auth', access_token: token })); return; }
     if (msg.type === 'auth_ok') {
       attempts = 0;
+      authed = true;
       setStatus(true);
+      flushQueue();
       command<EntityState[]>('get_states').then((s) => cache.setAll(s), () => {});
       subscribe();
       return;
     }
-    if (msg.type === 'auth_invalid') { stopped = true; failAll(new Error('auth_invalid')); ws?.close(); return; }
+    if (msg.type === 'auth_invalid') { stopped = true; setStatus(false); failAll(new Error('auth_invalid')); queue.length = 0; ws?.close(); return; }
     if (msg.type === 'event' && msg.id === stateSubId) {
       const ns = msg.event?.data?.new_state;
       if (ns) cache.setOne(ns);
@@ -87,6 +99,7 @@ export function createHaSocket(opts: {
   };
 
   function connect(): void {
+    authed = false;
     try {
       ws = new WebSocket(url);
     } catch {
@@ -97,6 +110,7 @@ export function createHaSocket(opts: {
     ws.onclose = () => {
       setStatus(false);
       failAll(new Error('closed'));
+      queue.length = 0;
       scheduleReconnect();
     };
     ws.onerror = () => { /* onclose follows */ };
@@ -108,6 +122,7 @@ export function createHaSocket(opts: {
       stopped = true;
       if (timer) { clearTimeout(timer); timer = null; }
       failAll(new Error('closed'));
+      queue.length = 0;
       try { ws?.close(); } catch { /* ignore */ }
     },
     getStates() { return command<EntityState[]>('get_states'); },

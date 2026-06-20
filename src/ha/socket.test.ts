@@ -100,6 +100,41 @@ describe('createHaSocket', () => {
     sock.close();
   });
 
+  it('queues commands issued before auth_ok and resolves them after', async () => {
+    const cache = new StateCache();
+    const sock = createHaSocket({ baseUrl: 'http://h:8123', token: 't', cache });
+    sock.start();
+    // socket is CONNECTING (readyState=0) — command should NOT reject synchronously
+    const p = sock.getStates();
+    let rejected = false;
+    p.catch(() => { rejected = true; });
+    // flush microtasks — still pending, not rejected
+    await Promise.resolve();
+    expect(rejected).toBe(false);
+    // drive auth handshake
+    MockWS.last.open(); // emits auth_required → sends auth
+    MockWS.last.emit({ type: 'auth_ok' });
+    // after auth_ok: flushQueue sends the queued get_states first, then seed get_states
+    const allGetStates = MockWS.last.sent.filter((m) => m.type === 'get_states');
+    // the first get_states is the queued one
+    const queuedId = allGetStates[0].id;
+    MockWS.last.emit({ type: 'result', id: queuedId, success: true, result: [{ entity_id: 'light.x', state: 'on', attributes: {} }] });
+    const result = await p;
+    expect(result).toHaveLength(1);
+    expect((result as Array<{ entity_id: string }>)[0].entity_id).toBe('light.x');
+  });
+
+  it('auth_invalid notifies status false', () => {
+    const cache = new StateCache();
+    const sock = createHaSocket({ baseUrl: 'http://h:8123', token: 'bad', cache });
+    const statuses: boolean[] = [];
+    sock.onStatus((c) => statuses.push(c));
+    sock.start();
+    MockWS.last.open(); // auth_required → sends auth
+    MockWS.last.emit({ type: 'auth_invalid' });
+    expect(statuses).toContain(false);
+  });
+
   it('close() stops reconnect', () => {
     vi.useFakeTimers();
     const sock = createHaSocket({ baseUrl: 'http://h:8123', token: 't', cache: new StateCache(), reconnectMs: 100 });
