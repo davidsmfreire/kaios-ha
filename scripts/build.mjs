@@ -39,6 +39,13 @@ if (serve) {
   await ctx.watch();
   const { host, port } = await ctx.serve({ servedir: outdir, port: 1234 });
   console.log(`Dev server on http://${host}:${port}`);
+  // Remote HTTPS HA: a desktop browser enforces cert-trust and Origin on wss://
+  // that the KaiOS device doesn't. Set HA_DEV_TARGET to relay through a local
+  // ws:// the browser will accept (then point the server URL at the proxy).
+  if (process.env.HA_DEV_TARGET) {
+    const { startWsDevProxy } = await import('./ws-dev-proxy.mjs');
+    startWsDevProxy(process.env.HA_DEV_TARGET, Number(process.env.HA_DEV_PROXY_PORT) || 8765);
+  }
 } else {
   await esbuild.build(buildOptions);
   copyStatic();

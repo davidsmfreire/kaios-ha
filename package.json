@@ -17,7 +17,8 @@
     "gdeploy": "git+https://gitlab.com/suborg/gdeploy.git#da611122e705a71d18e23da4208525961531ddfa",
     "jsdom": "^24.0.0",
     "typescript": "^5.5.4",
-    "vitest": "^1.6.0"
+    "vitest": "^1.6.0",
+    "ws": "^8.21.0"
   },
   "keywords": [
     "vanilla",

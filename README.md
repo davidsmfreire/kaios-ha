@@ -85,6 +85,19 @@ connects the browser straight to the HA URL you configure, no proxy needed. Two 
 - **Reverse proxy** — if HA sits behind nginx/duckdns, that proxy must forward the WebSocket
   upgrade for `/api/websocket` (the device may reach HA by a different route than the desktop).
 
+**Remote HTTPS HA** (no LAN `http://` URL available): the desktop browser's cert-trust and Origin
+checks block a direct `wss://` that the KaiOS device accepts fine. Relay through the bundled WS
+dev-proxy — set `HA_DEV_TARGET` and `npm run dev` starts it, then point the server URL at the proxy:
+
+```sh
+HA_DEV_TARGET=https://ha.example.com npm run dev   # proxy on ws://localhost:8765
+# then in the app, set the server URL to http://localhost:8765
+```
+
+It relays `ws://localhost:8765` ↔ `wss://ha.example.com` **server-side**, where browser cert/Origin
+rules don't apply. TLS stays verified; for a self-signed cert add `HA_DEV_INSECURE_TLS=1` (dev only —
+the HA token is relayed over this link). Override the port with `HA_DEV_PROXY_PORT`.
+
 ## Deploying to a device (no old Firefox needed)
 
 WebIDE (the classic install GUI) requires an old Firefox / Waterfox. You can skip it entirely —
