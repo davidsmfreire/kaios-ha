@@ -30,19 +30,21 @@ describe('picker', () => {
     expect(onDone).toHaveBeenCalledWith([{ entityId: 'switch.b', name: null, icon: null }]);
   });
 
-  it('lists lovelace entities first but shows all of them', async () => {
+  it('lists lovelace entities first with their dashboard names, showing all', async () => {
     const client = { getStates: vi.fn().mockResolvedValue(states), callService: vi.fn(), ping: vi.fn() };
     const onDone = vi.fn();
     const picker = createPicker({
       client: client as any, initial: [], onDone, onCancel: vi.fn(),
-      fetchLovelace: () => Promise.resolve(new Set(['switch.b'])),
+      fetchLovelace: () => Promise.resolve({ order: ['switch.b'], names: new Map([['switch.b', 'My Switch']]) }),
     });
     const c = mountInto(picker);
     await flush();
-    expect(c.querySelectorAll('.item')).toHaveLength(2); // all entities still shown
-    picker.handleKey('ok'); // focus 0 is the lovelace one (switch.b), listed first
+    const items = c.querySelectorAll('.item');
+    expect(items).toHaveLength(2); // all entities still shown
+    expect(items[0].textContent).toContain('My Switch'); // lovelace name, listed first
+    picker.handleKey('ok'); // focus 0 is the lovelace one (switch.b)
     picker.handleKey('softRight');
-    expect(onDone).toHaveBeenCalledWith([{ entityId: 'switch.b', name: null, icon: null }]);
+    expect(onDone).toHaveBeenCalledWith([{ entityId: 'switch.b', name: 'My Switch', icon: null }]);
   });
 
   it('cancels on discovery failure', async () => {

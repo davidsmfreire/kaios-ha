@@ -6,6 +6,7 @@ import { showToast } from '../ui/toast';
 import { getDomain, domainOf } from '../domains/registry';
 import { HaClient } from '../ha/client';
 import { EntityState } from '../ha/types';
+import { LovelaceInfo } from '../ha/lovelace';
 import { TileConfig } from '../store/types';
 
 export function createPicker(opts: {
@@ -13,13 +14,18 @@ export function createPicker(opts: {
   initial: TileConfig[];
   onDone: (tiles: TileConfig[]) => void;
   onCancel: () => void;
-  fetchLovelace?: () => Promise<Set<string>>;
+  fetchLovelace?: () => Promise<LovelaceInfo>;
 }): Screen {
   const { client, initial, onDone, onCancel, fetchLovelace } = opts;
   const selected = new Set(initial.map((t) => t.entityId));
   let container: HTMLElement;
   let entities: EntityState[] = [];
+  let names = new Map<string, string>();
   let focusIndex = 0;
+
+  const displayName = (e: EntityState): string =>
+    names.get(e.entity_id)
+    ?? (typeof e.attributes.friendly_name === 'string' ? (e.attributes.friendly_name as string) : e.entity_id);
 
   const render = () => {
     clear(container);
@@ -27,8 +33,7 @@ export function createPicker(opts: {
     const list = el('div', { class: 'list' });
     entities.forEach((e, i) => {
       const row = el('div', { class: i === focusIndex ? 'item focus' : 'item' });
-      const name = typeof e.attributes.friendly_name === 'string' ? (e.attributes.friendly_name as string) : e.entity_id;
-      row.appendChild(el('span', { text: `${selected.has(e.entity_id) ? '☑' : '☐'} ${getDomain(e.entity_id).icon} ${name}` }));
+      row.appendChild(el('span', { text: `${selected.has(e.entity_id) ? '☑' : '☐'} ${getDomain(e.entity_id).icon} ${displayName(e)}` }));
       row.appendChild(el('span', { class: 'tag', text: domainOf(e.entity_id) }));
       list.appendChild(row);
     });
@@ -42,11 +47,14 @@ export function createPicker(opts: {
       container = c;
       clear(container);
       container.appendChild(el('div', { class: 'empty', text: 'Discovering…' }));
-      Promise.all([client.getStates(), fetchLovelace ? fetchLovelace() : Promise.resolve(new Set<string>())]).then(
+      const noLovelace: LovelaceInfo = { order: [], names: new Map() };
+      Promise.all([client.getStates(), fetchLovelace ? fetchLovelace() : Promise.resolve(noLovelace)]).then(
         ([s, lovelace]) => {
+          names = lovelace.names;
+          const inLovelace = new Set(lovelace.order);
           // Show all entities, but list the ones on the Lovelace dashboard first.
-          entities = lovelace.size
-            ? [...s.filter((e) => lovelace.has(e.entity_id)), ...s.filter((e) => !lovelace.has(e.entity_id))]
+          entities = inLovelace.size
+            ? [...s.filter((e) => inLovelace.has(e.entity_id)), ...s.filter((e) => !inLovelace.has(e.entity_id))]
             : s;
           render();
         },
@@ -64,7 +72,7 @@ export function createPicker(opts: {
         else selected.add(e.entity_id);
         render();
       } else if (k === 'softRight') {
-        onDone([...selected].map((entityId) => ({ entityId, name: null, icon: null })));
+        onDone([...selected].map((entityId) => ({ entityId, name: names.get(entityId) ?? null, icon: null })));
       } else if (k === 'softLeft') {
         onCancel();
       }
