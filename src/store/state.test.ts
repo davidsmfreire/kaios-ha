@@ -48,4 +48,17 @@ describe('StateCache', () => {
     cache.setAll([]);
     expect(seen).toEqual(['a', 'b', 'c']);
   });
+
+  it('setOne inserts or replaces a single entity and notifies', () => {
+    const cache = new StateCache();
+    const fn = vi.fn();
+    cache.setAll([st('light.a', 'on')]);
+    cache.subscribe(fn);
+    cache.setOne(st('light.a', 'off'));
+    cache.setOne(st('switch.b', 'on'));
+    expect(fn).toHaveBeenCalledTimes(2);
+    expect(cache.get('light.a')?.state).toBe('off');
+    expect(cache.get('switch.b')?.state).toBe('on');
+    expect(cache.all()).toHaveLength(2);
+  });
 });

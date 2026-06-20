@@ -9,6 +9,11 @@ export class StateCache {
     this.notify();
   }
 
+  setOne(entity: EntityState): void {
+    this.states.set(entity.entity_id, entity);
+    this.notify();
+  }
+
   get(entityId: string): EntityState | undefined {
     return this.states.get(entityId);
   }
