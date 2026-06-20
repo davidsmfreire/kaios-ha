@@ -13,12 +13,17 @@ body,
   background-color: #181818 !important;
 }
 
-#root {
-  height: 100vh;
+/* Fill the parent, not the viewport: on device the body IS the screen, but in
+   the dev emulator the body is a 240x320 box inside a tall window — 100vh would
+   blow past it and break internal scrolling. */
+html,
+body,
+#root,
+#screen {
+  height: 100%;
 }
 #screen {
   display: flex;
   flex-direction: column;
-  height: 100vh;
 }
 #screen .grid { flex: 1 1 auto; }
