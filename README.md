@@ -43,7 +43,8 @@ npm run dev      # esbuild dev server on http://localhost:1234 (+ starts the COR
 |---|---|
 | `npm run dev` | Start the CORS proxy and an esbuild watch + serve dev server. |
 | `npm run build` | Production bundle into `build/` (target `es2015` for Gecko 48, IIFE). |
-| `npm run package` | `build` + zip `build/` into `application.zip` (ready to flash). |
+| `npm run package` | `build` + zip `build/` into `application.zip` (for make-kaios-install / OmniSD). |
+| `npm run flash` | `build` + install to a connected KaiOS device via gdeploy (see Deploying). |
 | `npm run typecheck` | `tsc --noEmit`. |
 | `npm test` | Run the Vitest suite. |
 
@@ -62,37 +63,70 @@ dev server it is, so `npm run dev` starts the small Flask proxy in `docker/`. Se
 ## Deploying to a device (no old Firefox needed)
 
 WebIDE (the classic install GUI) requires an old Firefox / Waterfox. You can skip it entirely —
-installation goes over the **KaiOS remote debugging protocol** via ADB, which CLI tools speak
-directly.
+installation goes over the **KaiOS remote debugging protocol** via ADB. [gdeploy](https://gitlab.com/suborg/gdeploy)
+(a Node.js client) is bundled as a dev dependency and wrapped in `npm run flash`.
 
-1. Build the package: `npm run package` → produces `application.zip` (with `manifest.webapp` at
-   the zip root).
-2. On the phone, enable debugging: dial `*#*#33284#*#*` to toggle ADB + DevTools.
-3. Confirm the connection with Android platform-tools: `adb devices`.
-4. Push `application.zip` with a CLI installer:
-   - [**gdeploy**](https://sites.google.com/view/bananahackers/development/webide) — a Node.js
-     KaiOS app manager (no Firefox, no XPCShell).
-   - [**make-kaios-install**](https://github.com/sunsetsonwheels/make-kaios-install) — Makefile +
-     XPCShell + ADB.
+1. On the phone, enable debugging: dial `*#*#33284#*#*` and choose **"ADB and DevTools"** (a bug
+   icon appears in the status bar).
+2. Connect the phone and confirm with Android platform-tools: `adb devices` should list it. If you
+   have **other** devices plugged in (e.g. an Android phone), either unplug them or pin the target
+   with `export ANDROID_SERIAL=<kaios-serial>` — gdeploy targets one device at a time.
+3. Flash it:
+   ```sh
+   npm run flash
+   ```
+   Accept the **"remote debugging"** prompt on the phone the first time. Then `npx gdeploy list`
+   shows installed apps and `npx gdeploy start <manifestUrl>` launches one.
 
-No PC at all? [**OmniSD**](https://wiki.bananahackers.net/development/webide) installs packaged
-zips straight from the phone's storage.
+`npm run flash` runs `gdeploy install build` under the hood — gdeploy zips the `build/` **directory**
+itself (it needs the system `zip` and `adb` tools installed). The separate `application.zip` from
+`npm run package` is for the other installers below, not gdeploy.
+
+Other routes (no Firefox either):
+- [**make-kaios-install**](https://github.com/sunsetsonwheels/make-kaios-install) — Makefile +
+  XPCShell + ADB; installs `application.zip`.
+- [**OmniSD**](https://wiki.bananahackers.net/development/webide) — install packaged zips straight
+  from the phone's storage, no PC at all.
 
 The app's manifest is `privileged`, which installs fine as a sideloaded debug app (no store
 signing required).
 
-## Debugging (no old Firefox needed)
+## Debugging
 
-Modern Firefox can't debug Gecko 48 either, so use:
+Quick, dependency-free options (no old Firefox):
 
 - **`adb logcat`** — `console.log`, JS exceptions and Gecko errors stream here:
   ```sh
   adb logcat | grep -iE "Gecko|Console|JavaScript"
   ```
+- **`gdeploy evaluate`** — run JS in the live app context as a REPL:
+  ```sh
+  npx gdeploy evaluate <manifestUrl> "console.log(document.title)"
+  ```
 - **On-screen console** — an in-page DevTools overlay like
   [Eruda](https://github.com/liriliri/eruda) or [vConsole](https://github.com/Tencent/vConsole)
   renders a console / network / DOM inspector on the device itself (pick a version compatible with
   Gecko 48).
+
+For the full GUI DevTools against the real device, use Waterfox Classic — see below.
+
+## Local development with Waterfox Classic
+
+Modern Firefox and Chrome dropped both WebIDE and support for Gecko 48, so they can neither run the
+app in a representative engine nor remote-debug the device. [**Waterfox Classic**](https://classic.waterfox.net/)
+is a maintained fork of legacy Firefox (≈ FF 56 ESR) that keeps WebIDE and the legacy DevTools — the
+one desktop browser that can still do both:
+
+- **Run the app in an old-Gecko engine** — open `build/index.html` (after `npm run build`) or the
+  dev server (`npm run dev` → `http://localhost:1234`) in Waterfox Classic to catch compatibility
+  problems far closer to the device than a modern browser would.
+- **WebIDE remote debugging** — open WebIDE (`Tools → Web Developer → WebIDE`, or `Shift+F8`),
+  add the phone as a Remote Runtime over ADB, then install / inspect / debug with the full DevTools
+  suite (DOM inspector, JS debugger, console, network monitor) — richer than logcat or an on-screen
+  overlay.
+
+Optional: the CLI flow above (`npm run flash` + `adb logcat` / `gdeploy evaluate`) covers install
+and debugging without it.
 
 ## Roadmap
 
