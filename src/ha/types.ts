@@ -5,3 +5,9 @@ export interface EntityState {
   last_changed?: string;
   last_updated?: string;
 }
+
+export interface ServiceCall {
+  domain: string;
+  service: string;
+  data: Record<string, unknown>;
+}
