@@ -12,7 +12,9 @@ export function renderTile(tile: TileConfig, entity: EntityState | undefined, fo
   const friendly = entity && typeof entity.attributes.friendly_name === 'string'
     ? (entity.attributes.friendly_name as string)
     : undefined;
-  node.appendChild(el('div', { class: 'nm', text: tile.name ?? friendly ?? tile.entityId }));
+  const name = tile.name ?? friendly ?? tile.entityId;
+  node.appendChild(el('div', { class: 'nm', text: name }));
+  if (name !== tile.entityId) node.appendChild(el('div', { class: 'eid', text: tile.entityId }));
 
   node.appendChild(el('div', { class: 'st', text: entity ? domain.formatState(entity) : '—' }));
   return node;

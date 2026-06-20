@@ -13,6 +13,7 @@ describe('renderTile', () => {
     expect(node.classList.contains('tile')).toBe(true);
     expect(node.querySelector('.ic')!.textContent).toBe('💡');
     expect(node.querySelector('.nm')!.textContent).toBe('Kitchen');
+    expect(node.querySelector('.eid')!.textContent).toBe('light.kitchen'); // entity id beneath
     expect(node.querySelector('.st')!.textContent).toBe('ON · 100%');
     expect(node.classList.contains('focus')).toBe(false);
   });
@@ -20,13 +21,15 @@ describe('renderTile', () => {
   it('uses tile.name override and shows dash when no state yet', () => {
     const node = renderTile(cfg('switch.fan', 'Fan'), undefined, true);
     expect(node.querySelector('.nm')!.textContent).toBe('Fan');
+    expect(node.querySelector('.eid')!.textContent).toBe('switch.fan');
     expect(node.querySelector('.st')!.textContent).toBe('—');
     expect(node.classList.contains('focus')).toBe(true);
   });
 
-  it('falls back to entity id when no name available', () => {
+  it('falls back to entity id and omits the secondary id line when no name available', () => {
     const node = renderTile(cfg('sensor.temp'), st('sensor.temp', '21', { unit_of_measurement: '°C' }), false);
     expect(node.querySelector('.nm')!.textContent).toBe('sensor.temp');
+    expect(node.querySelector('.eid')).toBeNull(); // no duplicate id line
     expect(node.querySelector('.st')!.textContent).toBe('21 °C');
   });
 });

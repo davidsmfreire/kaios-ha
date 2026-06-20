@@ -12,14 +12,18 @@
   font-size: 9px;
   opacity: 0.9;
 }
+/* Flexbox, not CSS Grid: Gecko 48 (KaiOS 2.5) doesn't implement grid layout.
+   No flex `gap` either (Firefox 63+) — use margins + calc for 2 columns. */
 .grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  padding: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  padding: 3px;
   overflow-y: auto;
 }
 .tile {
+  width: calc(50% - 8px);
+  margin: 4px;
   background: #373737;
   border-radius: 7px;
   padding: 7px 5px;
@@ -35,7 +39,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.tile .st { font-size: 9px; color: #9fd; }
+.tile .eid {
+  font-size: 8px;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tile .st { font-size: 9px; color: #9fd; margin-top: 1px; }
 .tile.focus { background: #1f4a5c; box-shadow: 0 0 0 2px #03a9f4; }
 .softkeys {
   background: #000;
