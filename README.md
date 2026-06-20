@@ -75,12 +75,26 @@ installation goes over the **KaiOS remote debugging protocol** via ADB. [gdeploy
    ```sh
    npm run flash
    ```
-   Accept the **"remote debugging"** prompt on the phone the first time. Then `npx gdeploy list`
-   shows installed apps and `npx gdeploy start <manifestUrl>` launches one.
+   Accept the **"remote debugging"** prompt on the phone the first time. The app installs at the
+   **stable** id `app://kaios-ha/manifest.webapp`, so re-flashing **replaces** it (no piling up
+   stale copies). `npx gdeploy list` shows installed apps; `npx gdeploy start app://kaios-ha/manifest.webapp`
+   launches it.
 
-`npm run flash` runs `gdeploy install build` under the hood — gdeploy zips the `build/` **directory**
-itself (it needs the system `zip` and `adb` tools installed). The separate `application.zip` from
-`npm run package` is for the other installers below, not gdeploy.
+4. Seed a server (until the in-app setup UI lands in a later plan), then reload — edit the URL,
+   token, and entity ids:
+   ```sh
+   npx gdeploy evaluate app://kaios-ha/manifest.webapp "localStorage.setItem('kaios-ha.config', JSON.stringify({version:1,activeServerId:'s1',servers:[{id:'s1',name:'Home',baseUrl:'http://homeassistant.local:8123',token:'<LONG_LIVED_TOKEN>',pages:[{id:'p1',name:'Home',tiles:[{entityId:'light.YOUR_LIGHT',name:null,icon:null}]}]}],settings:{pollIntervalMs:5000,theme:'dark'}})); location.reload()"
+   ```
+   With no config the app shows a "No dashboard yet" message (not a blank screen).
+
+`npm run flash` runs `node scripts/flash.mjs` — it zips `build/` and installs it over the debugging
+protocol with a fixed app id (needs the system `adb` tool). The separate `application.zip` from
+`npm run package` is for the other installers below.
+
+> **Troubleshooting — white/blank screen:** almost always a stale install. Older flashes created a
+> new random app id each time; an interrupted one could leave a half-extracted copy whose `index.js`
+> 404s (white page). Uninstall stray copies (`npx gdeploy list` → `npx gdeploy uninstall <id>`) and
+> re-flash; the stable id prevents recurrence. With multiple devices attached, `export ANDROID_SERIAL=<kaios-serial>`.
 
 Other routes (no Firefox either):
 - [**make-kaios-install**](https://github.com/sunsetsonwheels/make-kaios-install) — Makefile +

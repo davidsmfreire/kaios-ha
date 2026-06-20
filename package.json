@@ -7,7 +7,7 @@
     "dev": "./scripts/cors_proxy_up.sh && node scripts/build.mjs --serve",
     "build": "node scripts/build.mjs",
     "package": "npm run build && (cd build && rm -f ../application.zip && zip -r -X -q ../application.zip .)",
-    "flash": "npm run build && gdeploy install build",
+    "flash": "npm run build && node scripts/flash.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
