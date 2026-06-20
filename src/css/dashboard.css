@@ -29,6 +29,7 @@
   padding: 7px 5px;
   text-align: center;
   color: #fff;
+  overflow: hidden;
   box-shadow: 0 0 0 2px transparent;
 }
 .tile .ic { font-size: 18px; }
@@ -46,7 +47,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.tile .st { font-size: 9px; color: #9fd; margin-top: 1px; }
+.tile .st {
+  font-size: 9px;
+  color: #9fd;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .tile.focus { background: #1f4a5c; box-shadow: 0 0 0 2px #03a9f4; }
 .softkeys {
   background: #000;
