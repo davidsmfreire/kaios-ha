@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { createStack, Screen } from './stack';
 
 const fakeScreen = (): Screen & { mount: any; unmount: any; handleKey: any } => ({
@@ -49,5 +49,39 @@ describe('createStack', () => {
     expect(a.unmount).toHaveBeenCalledTimes(1); // destroy unmounts top
     press('ArrowUp');
     expect(a.handleKey).not.toHaveBeenCalled(); // listener removed
+  });
+});
+
+afterEach(() => { document.body.innerHTML = ''; });
+
+describe('createStack — editable + reset', () => {
+  it('yields non-softkey keys when an input is focused, but still routes softkeys', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const stack = createStack(container);
+    const screen = { mount: vi.fn(), unmount: vi.fn(), handleKey: vi.fn() };
+    stack.push(screen);
+    const input = document.createElement('input');
+    document.body.appendChild(input);
+    input.focus();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    expect(screen.handleKey).not.toHaveBeenCalled(); // yielded to input
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'SoftRight' }));
+    expect(screen.handleKey).toHaveBeenCalledWith('softRight'); // softkey still routed
+    stack.destroy();
+  });
+
+  it('reset unmounts existing screens and mounts the new one', () => {
+    const container = document.createElement('div');
+    const stack = createStack(container);
+    const a = { mount: vi.fn(), unmount: vi.fn(), handleKey: vi.fn() };
+    const b = { mount: vi.fn(), unmount: vi.fn(), handleKey: vi.fn() };
+    stack.push(a);
+    stack.reset(b);
+    expect(a.unmount).toHaveBeenCalledTimes(1);
+    expect(b.mount).toHaveBeenCalledWith(container);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+    expect(b.handleKey).toHaveBeenCalledWith('up'); // b is now the top
+    stack.destroy();
   });
 });

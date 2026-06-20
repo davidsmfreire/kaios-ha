@@ -9,7 +9,13 @@ export interface Screen {
 export interface Stack {
   push(screen: Screen): void;
   pop(): void;
+  reset(screen: Screen): void;
   destroy(): void;
+}
+
+function isEditable(el: Element | null): boolean {
+  if (!el) return false;
+  return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || (el as HTMLElement).isContentEditable;
 }
 
 export function createStack(container: HTMLElement): Stack {
@@ -28,9 +34,16 @@ export function createStack(container: HTMLElement): Stack {
     top()!.mount(container);
   };
 
+  const reset = (screen: Screen) => {
+    while (screens.length) screens.pop()!.unmount();
+    screens.push(screen);
+    screen.mount(container);
+  };
+
   const onKeydown = (e: KeyboardEvent) => {
     const k = mapKey(e);
     if (k === 'other') return;
+    if (isEditable(document.activeElement) && k !== 'softLeft' && k !== 'softRight') return;
     e.preventDefault();
     if (k === 'back' && screens.length > 1) pop();
     else if (k !== 'back') top()?.handleKey(k);
@@ -41,8 +54,9 @@ export function createStack(container: HTMLElement): Stack {
   return {
     push,
     pop,
+    reset,
     destroy() {
-      top()?.unmount();
+      while (screens.length) screens.pop()!.unmount();
       document.removeEventListener('keydown', onKeydown);
     },
   };
