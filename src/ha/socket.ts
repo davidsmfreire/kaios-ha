@@ -19,7 +19,8 @@ export function createHaSocket(opts: {
 }): HaSocket {
   const { baseUrl, token, cache } = opts;
   const baseDelay = opts.reconnectMs ?? 1000;
-  const url = baseUrl.replace(/^http/, 'ws') + '/api/websocket';
+  // __HA_DEV_WS__ is '' in production; in dev it routes through the local WS proxy (see build.mjs).
+  const url = __HA_DEV_WS__ || baseUrl.replace(/^http/, 'ws') + '/api/websocket';
 
   let ws: WebSocket | null = null;
   let nextId = 1;

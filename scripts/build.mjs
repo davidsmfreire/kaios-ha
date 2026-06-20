@@ -4,6 +4,12 @@ import { cpSync, mkdirSync, rmSync } from 'node:fs';
 const serve = process.argv.includes('--serve');
 const outdir = 'build';
 
+// Dev-only: when HA_DEV_TARGET is set, route the app's WebSocket through the
+// local proxy (see ws-dev-proxy.mjs) without touching the saved server config —
+// the existing server's token is still used, only the socket URL is overridden.
+const proxyPort = Number(process.env.HA_DEV_PROXY_PORT) || 8765;
+const devWsUrl = serve && process.env.HA_DEV_TARGET ? `ws://localhost:${proxyPort}/api/websocket` : '';
+
 rmSync(outdir, { recursive: true, force: true });
 mkdirSync(`${outdir}/css`, { recursive: true });
 
@@ -30,7 +36,7 @@ const buildOptions = {
   outfile: `${outdir}/index.js`,
   minify: !serve,
   sourcemap: serve,
-  define: { __DEV__: String(serve) },
+  define: { __DEV__: String(serve), __HA_DEV_WS__: JSON.stringify(devWsUrl) },
 };
 
 if (serve) {
@@ -44,7 +50,7 @@ if (serve) {
   // ws:// the browser will accept (then point the server URL at the proxy).
   if (process.env.HA_DEV_TARGET) {
     const { startWsDevProxy } = await import('./ws-dev-proxy.mjs');
-    startWsDevProxy(process.env.HA_DEV_TARGET, Number(process.env.HA_DEV_PROXY_PORT) || 8765);
+    startWsDevProxy(process.env.HA_DEV_TARGET, proxyPort);
   }
 } else {
   await esbuild.build(buildOptions);
