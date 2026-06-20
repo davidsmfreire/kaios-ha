@@ -3,16 +3,18 @@
 A [Home Assistant](https://www.home-assistant.io/) remote for KaiOS feature phones —
 control your lights, switches, scripts, covers and more from the keypad.
 
-![screenshot](./docs/screenshot.png)
+<p align="center">
+  <img src="./docs/dashboard.png" alt="Grid dashboard" width="240">
+  <img src="./docs/detail.png" alt="Light detail screen" width="240">
+  <img src="./docs/settings.png" alt="Settings / server list" width="240">
+</p>
 
-> _Screenshot is of the original prototype. The app is being redesigned (multi-server, a
-> custom grid dashboard with D-pad navigation, per-domain detail screens). See **Roadmap**._
+> _Live screens on a KaiOS device: the grid dashboard, a per-domain detail screen, and the settings / multi-server menu._
 
 ## Status
 
-Mid-redesign. The **foundation** has landed: a modern build pipeline plus the UI-free core
-(runtime config, entity-state cache, HA REST client, per-domain registry). The new dashboard UI
-is in progress.
+Working on a real KaiOS device: multi-server support, a custom grid dashboard with D-pad
+navigation, per-domain detail screens, in-app configuration, and a live WebSocket transport.
 
 ## Architecture
 
@@ -22,11 +24,13 @@ Bundled with [esbuild](https://esbuild.github.io/), tested with [Vitest](https:/
 | Module | Responsibility |
 |---|---|
 | `src/store/` | Config persisted to `localStorage` (servers, pages, settings) + a live entity-state cache. |
-| `src/ha/` | Home Assistant REST client over mozSystem `XMLHttpRequest` (`getStates`, `callService`, `ping`). |
+| `src/ha/` | Home Assistant WebSocket client (auth, live state via `subscribe_events`, `callService`, reconnect) + Lovelace config. |
 | `src/domains/` | Per-domain registry: icon, state formatting, primary action, detail controls. |
+| `src/nav/` | Screen stack with D-pad / softkey / Back navigation. |
+| `src/screens/` | Dashboard, per-domain detail, server form, entity picker, settings. |
 
-The HA client is UI-free and transport-isolated, so a future WebSocket transport can replace it
-without touching the rest of the app.
+State stays live over a single WebSocket: the client authenticates, subscribes to `state_changed`,
+and pushes updates into the cache, which every screen renders from.
 
 ## Getting started
 
@@ -49,11 +53,26 @@ npm run dev      # esbuild dev server on http://localhost:1234 (+ starts the COR
 | `npm run typecheck` | `tsc --noEmit`. |
 | `npm test` | Run the Vitest suite. |
 
+### Dev emulator
+
+`npm run dev` wraps the app in a 240×320 KaiOS device frame (centred on a dark page) and simulates
+the keypad, so you can drive it from a desktop browser at <http://localhost:1234>. The frame and
+shims are dev-only — esbuild's dead-code elimination strips them from the production build.
+
+| Desktop input | KaiOS action |
+|---|---|
+| Arrow keys | D-pad |
+| `Enter` | OK / centre softkey |
+| `[` / `]` | SoftLeft / SoftRight |
+| `Backspace` | Back |
+| Click a softkey label | the matching softkey |
+
 ## Configuration
 
 There is **no `env.js` file** anymore. Servers (URL + long-lived token) are configured at runtime
 and stored in the device's `localStorage` — nothing secret lives in the source or the build
-artifact. (The in-app settings UI lands with the dashboard; see Roadmap.)
+artifact. Servers are managed in-app: first-run onboarding, plus a Settings menu to add, edit and
+switch between them.
 
 ### CORS during development
 
@@ -81,8 +100,8 @@ installation goes over the **KaiOS remote debugging protocol** via ADB. [gdeploy
    stale copies). `npx gdeploy list` shows installed apps; `npx gdeploy start app://kaios-ha/manifest.webapp`
    launches it.
 
-4. Seed a server (until the in-app setup UI lands in a later plan), then reload — edit the URL,
-   token, and entity ids:
+4. The app opens to in-app onboarding on first run. To skip it from the CLI, seed a server
+   directly, then reload — edit the URL, token, and entity ids:
    ```sh
    npx gdeploy evaluate app://kaios-ha/manifest.webapp "localStorage.setItem('kaios-ha.config', JSON.stringify({version:1,activeServerId:'s1',servers:[{id:'s1',name:'Home',baseUrl:'http://homeassistant.local:8123',token:'<LONG_LIVED_TOKEN>',pages:[{id:'p1',name:'Home',tiles:[{entityId:'light.YOUR_LIGHT',name:null,icon:null}]}]}],settings:{pollIntervalMs:5000,theme:'dark'}})); location.reload()"
    ```
@@ -161,12 +180,14 @@ and debugging without it.
 
 ## Roadmap
 
-- [x] Foundation — esbuild + Vitest, config store, HA REST client, domain registry
-- [ ] Navigation framework + grid dashboard (D-pad, softkeys, live polling)
-- [ ] Per-domain detail screens (covers, climate, dimmable lights)
-- [ ] Settings + multi-server management + quick-switch
-- [ ] Entity discovery + in-app picker + page management
-- [ ] Polish — toasts, icons, i18n, docs
+- [x] Foundation — esbuild + Vitest, config store, domain registry
+- [x] Navigation framework + grid dashboard (D-pad, softkeys, optimistic actions)
+- [x] Per-domain detail screens (covers, climate, dimmable lights)
+- [x] Settings + multi-server management + quick-switch
+- [x] Entity discovery + in-app picker (Lovelace-ordered, with card name overrides)
+- [x] Live WebSocket transport (auth, `subscribe_events`, reconnect)
+- [ ] Page management (multiple dashboard pages)
+- [ ] Polish — icons, i18n, more docs
 
 ## Credits
 
