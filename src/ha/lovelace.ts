@@ -41,38 +41,3 @@ export interface LovelaceInfo {
   order: string[];
   names: Map<string, string>;
 }
-
-// Fetch the server's stored Lovelace dashboard over the HA WebSocket API and
-// return entity order + name overrides. Resolves empty on any failure.
-export function fetchLovelace(target: { baseUrl: string; token: string }): Promise<LovelaceInfo> {
-  return new Promise((resolve) => {
-    const finish = (entities: LovelaceEntity[]) => {
-      clearTimeout(timer);
-      try { ws.close(); } catch { /* already closing */ }
-      const names = new Map<string, string>();
-      entities.forEach((e) => { if (e.name) names.set(e.id, e.name); });
-      resolve({ order: entities.map((e) => e.id), names });
-    };
-    let ws: WebSocket;
-    try {
-      ws = new WebSocket(target.baseUrl.replace(/^http/, 'ws') + '/api/websocket');
-    } catch {
-      resolve({ order: [], names: new Map() });
-      return;
-    }
-    const timer = setTimeout(() => finish([]), 8000);
-    ws.onerror = () => finish([]);
-    ws.onmessage = (ev) => {
-      let msg: { type?: string; id?: number; success?: boolean; result?: unknown };
-      try {
-        msg = JSON.parse(String(ev.data));
-      } catch {
-        return;
-      }
-      if (msg.type === 'auth_required') ws.send(JSON.stringify({ type: 'auth', access_token: target.token }));
-      else if (msg.type === 'auth_ok') ws.send(JSON.stringify({ id: 1, type: 'lovelace/config' }));
-      else if (msg.type === 'auth_invalid') finish([]);
-      else if (msg.type === 'result' && msg.id === 1) finish(msg.success ? collectLovelaceEntities(msg.result) : []);
-    };
-  });
-}
