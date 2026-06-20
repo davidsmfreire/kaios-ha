@@ -55,7 +55,7 @@ export function createStack(container: HTMLElement): Stack {
     if (k === 'back') {
       if (top()?.handleKey(k)) return; // screen consumed Back (e.g. the form treats it as Cancel)
       if (screens.length > 1) pop();
-      else window.close(); // root screen: exit the app (KaiOS back-to-close)
+      else if (!__DEV__) window.close(); // root screen: exit the app (KaiOS back-to-close); skip in the browser emulator (would close the tab)
     } else {
       top()?.handleKey(k);
     }
