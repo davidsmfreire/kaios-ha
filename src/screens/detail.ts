@@ -10,8 +10,8 @@ import { TileConfig } from '../store/types';
 
 const CLIMATE_MODES = ['off', 'heat', 'cool', 'auto'];
 
-export function createDetail(opts: { client: HaClient; cache: StateCache; tile: TileConfig }): Screen {
-  const { client, cache, tile } = opts;
+export function createDetail(opts: { client: HaClient; cache: StateCache; tile: TileConfig; onBack: () => void }): Screen {
+  const { client, cache, tile, onBack } = opts;
   const id = tile.entityId;
   const serviceDomain = domainOf(id);
   const domain = getDomain(id);
@@ -70,6 +70,7 @@ export function createDetail(opts: { client: HaClient; cache: StateCache; tile: 
     },
     unmount() {},
     handleKey(k: Key) {
+      if (k === 'softLeft') { onBack(); return; }
       if (domain.detail === 'cover') {
         if (k === 'up') call('open_cover', {}, 'Opening');
         else if (k === 'ok') call('stop_cover', {}, 'Stopping');

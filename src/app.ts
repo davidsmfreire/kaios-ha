@@ -54,7 +54,7 @@ export function startApp(root: HTMLElement): void {
       const client = new HaClient({ baseUrl: found.server.baseUrl, token: found.server.token });
       stack.reset(createDashboard({
         client, cache, page: found.page, serverName: found.server.name, intervalMs: config.settings.pollIntervalMs,
-        onOpenDetail: (tile) => stack.push(createDetail({ client, cache, tile })),
+        onOpenDetail: (tile) => stack.push(createDetail({ client, cache, tile, onBack: () => stack.pop() })),
         onMenu: openSettings,
       }));
       return;
