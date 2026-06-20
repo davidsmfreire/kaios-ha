@@ -2,6 +2,7 @@ import { loadConfig, saveConfig } from './store/config';
 import { upsertServer, setActiveServer, setPageTiles, firstPageWithTiles } from './store/config-ops';
 import { StateCache } from './store/state';
 import { HaClient } from './ha/client';
+import { fetchLovelaceEntityIds } from './ha/lovelace';
 import { createStack } from './nav/stack';
 import { createDashboard } from './screens/dashboard';
 import { createDetail } from './screens/detail';
@@ -21,6 +22,7 @@ export function startApp(root: HTMLElement): void {
     stack.push(createPicker({
       client: new HaClient({ baseUrl: server.baseUrl, token: server.token }),
       initial: page.tiles,
+      fetchLovelace: () => fetchLovelaceEntityIds({ baseUrl: server.baseUrl, token: server.token }),
       onDone: (tiles) => { config = setPageTiles(config, server.id, page.id, tiles); saveConfig(config); showDashboard(); },
       onCancel: () => showDashboard(),
     }));

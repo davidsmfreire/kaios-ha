@@ -30,6 +30,21 @@ describe('picker', () => {
     expect(onDone).toHaveBeenCalledWith([{ entityId: 'switch.b', name: null, icon: null }]);
   });
 
+  it('lists lovelace entities first but shows all of them', async () => {
+    const client = { getStates: vi.fn().mockResolvedValue(states), callService: vi.fn(), ping: vi.fn() };
+    const onDone = vi.fn();
+    const picker = createPicker({
+      client: client as any, initial: [], onDone, onCancel: vi.fn(),
+      fetchLovelace: () => Promise.resolve(new Set(['switch.b'])),
+    });
+    const c = mountInto(picker);
+    await flush();
+    expect(c.querySelectorAll('.item')).toHaveLength(2); // all entities still shown
+    picker.handleKey('ok'); // focus 0 is the lovelace one (switch.b), listed first
+    picker.handleKey('softRight');
+    expect(onDone).toHaveBeenCalledWith([{ entityId: 'switch.b', name: null, icon: null }]);
+  });
+
   it('cancels on discovery failure', async () => {
     const client = { getStates: vi.fn().mockRejectedValue(new Error('x')), callService: vi.fn(), ping: vi.fn() };
     const onCancel = vi.fn();

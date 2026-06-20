@@ -13,8 +13,9 @@ export function createPicker(opts: {
   initial: TileConfig[];
   onDone: (tiles: TileConfig[]) => void;
   onCancel: () => void;
+  fetchLovelace?: () => Promise<Set<string>>;
 }): Screen {
-  const { client, initial, onDone, onCancel } = opts;
+  const { client, initial, onDone, onCancel, fetchLovelace } = opts;
   const selected = new Set(initial.map((t) => t.entityId));
   let container: HTMLElement;
   let entities: EntityState[] = [];
@@ -41,8 +42,14 @@ export function createPicker(opts: {
       container = c;
       clear(container);
       container.appendChild(el('div', { class: 'empty', text: 'Discovering…' }));
-      client.getStates().then(
-        (s) => { entities = s; render(); },
+      Promise.all([client.getStates(), fetchLovelace ? fetchLovelace() : Promise.resolve(new Set<string>())]).then(
+        ([s, lovelace]) => {
+          // Show all entities, but list the ones on the Lovelace dashboard first.
+          entities = lovelace.size
+            ? [...s.filter((e) => lovelace.has(e.entity_id)), ...s.filter((e) => !lovelace.has(e.entity_id))]
+            : s;
+          render();
+        },
         () => { showToast(container, 'Discovery failed'); onCancel(); },
       );
     },
