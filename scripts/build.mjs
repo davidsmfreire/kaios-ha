@@ -18,7 +18,9 @@ const buildOptions = {
   entryPoints: ['src/index.ts'],
   bundle: true,
   format: 'iife',
-  target: ['firefox48'],
+  // ES2015 baseline: Gecko 48 (KaiOS 2.5) supports const/let/classes natively;
+  // esbuild lowers async/await to generators, which Gecko 48 also supports.
+  target: ['es2015'],
   outfile: `${outdir}/index.js`,
   minify: !serve,
   sourcemap: serve,
