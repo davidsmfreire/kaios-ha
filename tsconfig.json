@@ -11,6 +11,5 @@
     "skipLibCheck": true,
     "types": []
   },
-  "include": ["src"],
-  "exclude": ["src/ts"]
+  "include": ["src"]
 }
