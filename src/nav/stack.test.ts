@@ -38,17 +38,20 @@ describe('createStack', () => {
     stack.destroy();
   });
 
-  it('Back is a no-op with a single screen, and destroy removes the listener', () => {
+  it('Back on the root screen closes the app (no pop), and destroy removes the listener', () => {
+    const close = vi.spyOn(window, 'close').mockImplementation(() => {});
     const container = document.createElement('div');
     const stack = createStack(container);
     const a = fakeScreen();
     stack.push(a);
     press('Backspace');
-    expect(a.unmount).not.toHaveBeenCalled(); // not popped
+    expect(a.unmount).not.toHaveBeenCalled(); // not popped at root
+    expect(close).toHaveBeenCalledTimes(1); // exits the app instead
     stack.destroy();
     expect(a.unmount).toHaveBeenCalledTimes(1); // destroy unmounts top
     press('ArrowUp');
     expect(a.handleKey).not.toHaveBeenCalled(); // listener removed
+    close.mockRestore();
   });
 });
 

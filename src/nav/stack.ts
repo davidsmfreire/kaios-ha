@@ -50,8 +50,12 @@ export function createStack(container: HTMLElement): Stack {
     if (k === 'other') return;
     if (isEditable(document.activeElement) && !ROUTED_WHILE_EDITING.has(k)) return;
     e.preventDefault();
-    if (k === 'back' && screens.length > 1) pop();
-    else if (k !== 'back') top()?.handleKey(k);
+    if (k === 'back') {
+      if (screens.length > 1) pop();
+      else window.close(); // root screen: exit the app (KaiOS back-to-close)
+    } else {
+      top()?.handleKey(k);
+    }
   };
 
   document.addEventListener('keydown', onKeydown);
