@@ -32,4 +32,12 @@ describe('renderTile', () => {
     expect(node.querySelector('.eid')).toBeNull(); // no duplicate id line
     expect(node.querySelector('.st')!.textContent).toBe('21 °C');
   });
+
+  it('prefers tile.name, then the lovelace name, then friendly_name', () => {
+    const e = st('switch.x', 'on', { friendly_name: 'Raw Name' });
+    // lovelace name beats friendly_name when tile.name is null
+    expect(renderTile(cfg('switch.x'), e, false, 'Living Room').querySelector('.nm')!.textContent).toBe('Living Room');
+    // tile.name beats the lovelace name
+    expect(renderTile(cfg('switch.x', 'Override'), e, false, 'Living Room').querySelector('.nm')!.textContent).toBe('Override');
+  });
 });

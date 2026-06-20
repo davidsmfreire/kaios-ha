@@ -3,7 +3,7 @@ import { TileConfig } from '../store/types';
 import { getDomain } from '../domains/registry';
 import { el } from './dom';
 
-export function renderTile(tile: TileConfig, entity: EntityState | undefined, focused: boolean): HTMLElement {
+export function renderTile(tile: TileConfig, entity: EntityState | undefined, focused: boolean, lovelaceName?: string): HTMLElement {
   const domain = getDomain(tile.entityId);
   const node = el('div', { class: focused ? 'tile focus' : 'tile' });
 
@@ -12,7 +12,7 @@ export function renderTile(tile: TileConfig, entity: EntityState | undefined, fo
   const friendly = entity && typeof entity.attributes.friendly_name === 'string'
     ? (entity.attributes.friendly_name as string)
     : undefined;
-  const name = tile.name ?? friendly ?? tile.entityId;
+  const name = tile.name ?? lovelaceName ?? friendly ?? tile.entityId;
   node.appendChild(el('div', { class: 'nm', text: name }));
   if (name !== tile.entityId) node.appendChild(el('div', { class: 'eid', text: tile.entityId }));
 

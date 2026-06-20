@@ -12,11 +12,13 @@ const page: PageConfig = {
 };
 
 const makeSocket = () => ({
-  start: vi.fn(), close: vi.fn(), getStates: vi.fn(), getLovelace: vi.fn(),
+  start: vi.fn(), close: vi.fn(), getStates: vi.fn(),
+  getLovelace: vi.fn().mockResolvedValue({ order: [], names: new Map() }),
   callService: vi.fn().mockResolvedValue(undefined),
   onStatus: vi.fn().mockReturnValue(() => {}),
 });
 const mountInto = (s: { mount: (c: HTMLElement) => void }) => { const c = document.createElement('div'); s.mount(c); return c; };
+const flush = () => new Promise((r) => setTimeout(r, 0));
 
 describe('dashboard', () => {
   it('renders a tile per entity and focuses the first', () => {
@@ -50,6 +52,17 @@ describe('dashboard', () => {
     dash.handleKey('ok');
     expect(onOpenDetail).toHaveBeenCalledWith(page.tiles[1]);
     expect(socket.callService).not.toHaveBeenCalled();
+    dash.unmount();
+  });
+
+  it('applies lovelace names fetched on mount to the tiles', async () => {
+    const cache = new StateCache();
+    cache.setAll([{ entity_id: 'switch.b', state: 'on', attributes: { friendly_name: 'Raw' } }]);
+    const socket = { ...makeSocket(), getLovelace: vi.fn().mockResolvedValue({ order: ['switch.b'], names: new Map([['switch.b', 'My Switch']]) }) };
+    const dash = createDashboard({ socket: socket as any, cache, page, serverName: 'Cabin', onOpenDetail: vi.fn() });
+    const c = mountInto(dash);
+    await flush();
+    expect(c.querySelectorAll('.tile')[0].querySelector('.nm')!.textContent).toBe('My Switch');
     dash.unmount();
   });
 

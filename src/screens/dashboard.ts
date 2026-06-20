@@ -26,10 +26,11 @@ export function createDashboard(opts: {
   let grid: HTMLElement;
   let unsubCache: (() => void) | null = null;
   let unsubStatus: (() => void) | null = null;
+  let names = new Map<string, string>();
 
   const renderGrid = () => {
     clear(grid);
-    page.tiles.forEach((tile, i) => grid.appendChild(renderTile(tile, cache.get(tile.entityId), i === focusIndex)));
+    page.tiles.forEach((tile, i) => grid.appendChild(renderTile(tile, cache.get(tile.entityId), i === focusIndex, names.get(tile.entityId))));
     keepInView(grid, grid.children[focusIndex] as HTMLElement | undefined);
   };
 
@@ -63,6 +64,7 @@ export function createDashboard(opts: {
       renderAll();
       unsubCache = cache.subscribe(renderGrid);
       unsubStatus = socket.onStatus((connected) => setOffline(container, !connected));
+      socket.getLovelace().then((info) => { names = info.names; renderGrid(); }, () => {});
     },
     unmount() {
       unsubCache?.();
