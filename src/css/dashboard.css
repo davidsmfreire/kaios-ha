@@ -20,6 +20,7 @@
   align-content: flex-start;
   padding: 3px;
   overflow-y: auto;
+  min-height: 0; /* let the flex child shrink below content so it scrolls internally instead of overflowing #screen */
 }
 .tile {
   width: calc(50% - 8px);
@@ -111,7 +112,7 @@
   font-size: 12px;
   margin: 3px 0;
 }
-.list { overflow-y: auto; flex: 1 1 auto; }
+.list { overflow-y: auto; flex: 1 1 auto; min-height: 0; }
 .item {
   display: flex; justify-content: space-between; align-items: center;
   background: #373737; color: #fff; border-radius: 6px;
