@@ -187,3 +187,6 @@ cython_debug/
 
 # brainstorming specs (kept local, not committed)
 docs/superpowers/
+
+# packaged KaiOS app
+/application.zip

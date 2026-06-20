@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "./scripts/cors_proxy_up.sh && node scripts/build.mjs --serve",
     "build": "node scripts/build.mjs",
+    "package": "npm run build && (cd build && rm -f ../application.zip && zip -r -X -q ../application.zip .)",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
