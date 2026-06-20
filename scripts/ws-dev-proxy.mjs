@@ -25,12 +25,16 @@ export function startWsDevProxy(port) {
     const upstream = new WebSocket(target, { rejectUnauthorized });
     const pending = [];
 
+    // Preserve the frame's text/binary type — HA sends JSON as text frames, and
+    // re-sending the raw Buffer would force a binary frame the browser delivers
+    // as a Blob (which the app can't JSON-parse). `ws` gives us isBinary; echo it.
     upstream.on('open', () => {
-      pending.forEach((m) => upstream.send(m));
+      pending.forEach(([m, binary]) => upstream.send(m, { binary }));
       pending.length = 0;
     });
-    client.on('message', (m) => (upstream.readyState === WebSocket.OPEN ? upstream.send(m) : pending.push(m)));
-    upstream.on('message', (m) => client.readyState === WebSocket.OPEN && client.send(m));
+    client.on('message', (m, isBinary) =>
+      upstream.readyState === WebSocket.OPEN ? upstream.send(m, { binary: isBinary }) : pending.push([m, isBinary]));
+    upstream.on('message', (m, isBinary) => client.readyState === WebSocket.OPEN && client.send(m, { binary: isBinary }));
 
     const shutdown = () => {
       try { client.close(); } catch { /* ignore */ }
