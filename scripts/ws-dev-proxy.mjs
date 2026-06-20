@@ -15,13 +15,16 @@ export function startWsDevProxy(port) {
   if (!rejectUnauthorized) console.warn('[ws-dev-proxy] TLS verification DISABLED (HA_DEV_INSECURE_TLS=1) — dev only');
   const wss = new WebSocketServer({ host: '127.0.0.1', port });
 
+  // Only the local dev page may use the relay. The SSRF risk is a foreign page
+  // scripting ws://localhost:<port>/?target=<internal host>; such pages carry a
+  // non-local Origin, which the browser sets and can't be spoofed.
+  const LOCAL_HOSTS = new Set(['localhost', '0.0.0.0', '::1', '[::1]']);
+  const isLocalOrigin = (host) => !!host && (LOCAL_HOSTS.has(host) || host.startsWith('127.'));
+
   wss.on('connection', (client, req) => {
-    // Only the local dev page may use the relay. The SSRF risk is a foreign page
-    // scripting ws://localhost:<port>/?target=<internal host>; such pages carry a
-    // non-local Origin, so reject anything that isn't a localhost dev origin.
     let originHost = null;
     try { originHost = req.headers.origin ? new URL(req.headers.origin).hostname : null; } catch { /* malformed */ }
-    if (originHost !== 'localhost' && originHost !== '127.0.0.1') {
+    if (!isLocalOrigin(originHost)) {
       console.error(`[ws-dev-proxy] rejected connection from origin ${req.headers.origin || '(none)'}`);
       client.close();
       return;
