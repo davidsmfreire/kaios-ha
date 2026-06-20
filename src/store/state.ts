@@ -29,6 +29,6 @@ export class StateCache {
   }
 
   private notify(): void {
-    this.subscribers.forEach((fn) => fn());
+    [...this.subscribers].forEach((fn) => fn());
   }
 }

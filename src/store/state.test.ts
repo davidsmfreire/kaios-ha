@@ -37,4 +37,15 @@ describe('StateCache', () => {
     cache.setAll([]);
     expect(fn).not.toHaveBeenCalled();
   });
+
+  it('a subscriber unsubscribing during notify does not skip the others', () => {
+    const cache = new StateCache();
+    const seen: string[] = [];
+    let offB: () => void;
+    cache.subscribe(() => { seen.push('a'); offB(); });
+    offB = cache.subscribe(() => seen.push('b'));
+    cache.subscribe(() => seen.push('c'));
+    cache.setAll([]);
+    expect(seen).toEqual(['a', 'b', 'c']);
+  });
 });
