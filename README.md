@@ -87,9 +87,10 @@ installation goes over the **KaiOS remote debugging protocol** via ADB. [gdeploy
    ```
    With no config the app shows a "No dashboard yet" message (not a blank screen).
 
-`npm run flash` runs `node scripts/flash.mjs` — it zips `build/` and installs it over the debugging
-protocol with a fixed app id (needs the system `adb` tool). The separate `application.zip` from
-`npm run package` is for the other installers below.
+`npm run flash` runs `node scripts/flash.mjs` — it zips `build/`, installs it over the debugging
+protocol with a fixed app id, and **relaunches** the app (needs the system `adb` tool). The relaunch
+matters: KaiOS otherwise keeps the old instance running and shows its pre-flash page. The separate
+`application.zip` from `npm run package` is for the other installers below.
 
 > **Troubleshooting — white/blank screen:** almost always a stale install. Older flashes created a
 > new random app id each time; an interrupted one could leave a half-extracted copy whose `index.js`

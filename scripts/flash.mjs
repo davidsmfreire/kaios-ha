@@ -15,5 +15,13 @@ const APP_ID = 'kaios-ha';
 execFileSync('adb', ['forward', `tcp:${PORT}`, 'localfilesystem:/data/local/debugger-socket'], { stdio: 'inherit' });
 const client = await connect(PORT);
 const appId = await installApp({ appPath: 'build', client, id: APP_ID });
-console.log(`Installed app://${appId}/manifest.webapp`);
+const manifestURL = `app://${appId}/manifest.webapp`;
+
+// Relaunch so the device runs the freshly installed code. KaiOS otherwise
+// resumes the already-running instance and shows its pre-flash page.
+const manager = await new Promise((resolve, reject) => client.getWebapps((e, m) => (e ? reject(e) : resolve(m))));
+await new Promise((resolve) => manager.close(manifestURL, () => resolve())); // no-op if not running
+await new Promise((resolve, reject) => manager.launch(manifestURL, (e) => (e ? reject(e) : resolve())));
+
+console.log(`Installed + launched ${manifestURL}`);
 process.exit(0);
