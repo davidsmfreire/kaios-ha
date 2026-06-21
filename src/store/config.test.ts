@@ -9,7 +9,7 @@ describe('config persistence', () => {
     expect(cfg.version).toBe(CONFIG_VERSION);
     expect(cfg.servers).toEqual([]);
     expect(cfg.activeServerId).toBeNull();
-    expect(cfg.settings.pollIntervalMs).toBe(5000);
+    expect(cfg.settings.theme).toBe('dark');
   });
 
   it('round-trips a saved config', () => {
@@ -29,7 +29,7 @@ describe('config persistence', () => {
     localStorage.setItem(CONFIG_KEY, JSON.stringify({ activeServerId: null, servers: [] }));
     const cfg = loadConfig();
     expect(cfg.version).toBe(CONFIG_VERSION);
-    expect(cfg.settings.pollIntervalMs).toBe(5000);
+    expect(cfg.settings.theme).toBe('dark');
     expect(cfg.servers).toEqual([]);
   });
 });

@@ -7,7 +7,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   version: CONFIG_VERSION,
   activeServerId: null,
   servers: [],
-  settings: { pollIntervalMs: 5000, theme: 'dark' },
+  settings: { theme: 'dark' },
 };
 
 export function migrate(raw: unknown): AppConfig {

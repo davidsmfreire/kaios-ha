@@ -71,8 +71,8 @@ shims are dev-only — esbuild's dead-code elimination strips them from the prod
 
 There is **no `env.js` file** anymore. Servers (URL + long-lived token) are configured at runtime
 and stored in the device's `localStorage` — nothing secret lives in the source or the build
-artifact. Servers are managed in-app: first-run onboarding, plus a Settings menu to add a server,
-switch the active one, and edit its entity list.
+artifact. Servers are managed in-app: first-run onboarding, plus a Settings menu to add or edit a
+server, switch the active one, and edit its entity list.
 
 ### Connecting to Home Assistant in development
 
@@ -115,7 +115,7 @@ installation goes over the **KaiOS remote debugging protocol** via ADB. [gdeploy
 4. The app opens to in-app onboarding on first run. To skip it from the CLI, seed a server
    directly, then reload — edit the URL, token, and entity ids:
    ```sh
-   npx gdeploy evaluate app://kaios-ha/manifest.webapp "localStorage.setItem('kaios-ha.config', JSON.stringify({version:1,activeServerId:'s1',servers:[{id:'s1',name:'Home',baseUrl:'http://homeassistant.local:8123',token:'<LONG_LIVED_TOKEN>',pages:[{id:'p1',name:'Home',tiles:[{entityId:'light.YOUR_LIGHT',name:null,icon:null}]}]}],settings:{pollIntervalMs:5000,theme:'dark'}})); location.reload()"
+   npx gdeploy evaluate app://kaios-ha/manifest.webapp "localStorage.setItem('kaios-ha.config', JSON.stringify({version:1,activeServerId:'s1',servers:[{id:'s1',name:'Home',baseUrl:'http://homeassistant.local:8123',token:'<LONG_LIVED_TOKEN>',pages:[{id:'p1',name:'Home',tiles:[{entityId:'light.YOUR_LIGHT',name:null,icon:null}]}]}],settings:{theme:'dark'}})); location.reload()"
    ```
    With no config the app shows a "No dashboard yet" message (not a blank screen).
 

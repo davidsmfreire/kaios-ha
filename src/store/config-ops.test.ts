@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { upsertServer, removeServer, setActiveServer, setPageTiles, firstPageWithTiles } from './config-ops';
 import { AppConfig, ServerConfig } from './types';
 
-const base: AppConfig = { version: 1, activeServerId: null, servers: [], settings: { pollIntervalMs: 5000, theme: 'dark' } };
+const base: AppConfig = { version: 1, activeServerId: null, servers: [], settings: { theme: 'dark' } };
 const srv = (id: string): ServerConfig => ({ id, name: id, baseUrl: 'http://h', token: 't', pages: [{ id: 'p1', name: 'Home', tiles: [] }] });
 
 describe('config-ops', () => {

@@ -7,19 +7,22 @@ import { AppConfig } from '../store/types';
 export function createSettings(opts: {
   config: AppConfig;
   onAddServer: () => void;
+  onEditServer: () => void;
   onEditEntities: () => void;
   onSetActive: (serverId: string) => void;
   onClose: () => void;
 }): Screen {
-  const { config, onAddServer, onEditEntities, onSetActive, onClose } = opts;
+  const { config, onAddServer, onEditServer, onEditEntities, onSetActive, onClose } = opts;
   const actions: Array<() => void> = [
     ...config.servers.map((s) => () => onSetActive(s.id)),
     onAddServer,
+    onEditServer,
     onEditEntities,
   ];
   const labels = [
     ...config.servers.map((s) => `${s.name}${s.id === config.activeServerId ? ' ●' : ''}`),
     '+ Add server',
+    'Edit server',
     'Edit entities',
   ];
   let container: HTMLElement;

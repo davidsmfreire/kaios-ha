@@ -13,7 +13,7 @@ A ground-up redesign of the prototype: from a single-server flat entity list int
 multi-server app with a custom dashboard and live updates.
 
 ### Added
-- Multi-server support: add servers, quick-switch the active one, and re-pick its entities from a Settings menu.
+- Multi-server support: add, edit and quick-switch servers from a Settings menu, plus re-pick a server's entities.
 - Grid dashboard with D-pad navigation, optimistic toggles, an offline banner, and Back-to-exit.
 - Per-domain detail screens for lights, covers and climate.
 - In-app setup: first-run onboarding, a server form, and an entity picker ordered by your Lovelace

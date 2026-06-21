@@ -53,6 +53,7 @@ export function startApp(root: HTMLElement): void {
     stack.push(createSettings({
       config,
       onAddServer: () => openServerForm(null),
+      onEditServer: () => { const s = activeServer(); if (s) openServerForm(s); },
       onEditEntities: () => { const s = activeServer(); if (s) openPicker(s); },
       onSetActive: (id) => { config = setActiveServer(config, id); saveConfig(config); showDashboard(); },
       onClose: () => stack.pop(),

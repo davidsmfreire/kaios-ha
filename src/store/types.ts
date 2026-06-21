@@ -19,7 +19,6 @@ export interface ServerConfig {
 }
 
 export interface AppSettings {
-  pollIntervalMs: number;
   theme: string;
 }
 

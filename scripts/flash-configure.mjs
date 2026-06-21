@@ -33,7 +33,7 @@ const config = {
   version: 1,
   activeServerId: servers[0].id,
   servers,
-  settings: { pollIntervalMs: 5000, theme: 'dark' },
+  settings: { theme: 'dark' },
 };
 
 let manager, manifestURL;
