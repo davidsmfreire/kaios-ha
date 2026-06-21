@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.2.0] - 2026-06-20
+## [0.2.0] - 2026-06-21
 
 A ground-up redesign of the prototype: from a single-server flat entity list into a
 multi-server app with a custom dashboard and live updates.
