@@ -71,8 +71,8 @@ shims are dev-only — esbuild's dead-code elimination strips them from the prod
 
 There is **no `env.js` file** anymore. Servers (URL + long-lived token) are configured at runtime
 and stored in the device's `localStorage` — nothing secret lives in the source or the build
-artifact. Servers are managed in-app: first-run onboarding, plus a Settings menu to add, edit and
-switch between them.
+artifact. Servers are managed in-app: first-run onboarding, plus a Settings menu to add a server,
+switch the active one, and edit its entity list.
 
 ### Connecting to Home Assistant in development
 
