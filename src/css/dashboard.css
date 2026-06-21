@@ -1,0 +1,129 @@
+.ha-header {
+  background: #03a9f4;
+  color: #eee;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 9px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ha-header .dots {
+  font-size: 9px;
+  opacity: 0.9;
+}
+/* Flexbox, not CSS Grid: Gecko 48 (KaiOS 2.5) doesn't implement grid layout.
+   No flex `gap` either (Firefox 63+) — use margins + calc for 2 columns. */
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  padding: 3px;
+  overflow-y: auto;
+  min-height: 0; /* let the flex child shrink below content so it scrolls internally instead of overflowing #screen */
+}
+.tile {
+  width: calc(50% - 8px);
+  margin: 4px;
+  background: #373737;
+  border-radius: 7px;
+  padding: 7px 5px;
+  text-align: center;
+  color: #fff;
+  overflow: hidden;
+  box-shadow: 0 0 0 2px transparent;
+}
+.tile .ic { font-size: 18px; }
+.tile .nm {
+  font-size: 10px;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tile .eid {
+  font-size: 8px;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tile .st {
+  font-size: 9px;
+  color: #9fd;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tile.focus { background: #1f4a5c; box-shadow: 0 0 0 2px #03a9f4; }
+.softkeys {
+  background: #000;
+  color: #bbb;
+  font-size: 10px;
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 9px;
+}
+.empty {
+  color: #bbb;
+  font-size: 12px;
+  padding: 16px;
+  text-align: center;
+}
+.offline-banner {
+  background: #b71c1c;
+  color: #fff;
+  font-size: 10px;
+  text-align: center;
+  padding: 3px;
+}
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  background: #000;
+  color: #fff;
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  opacity: 0.95;
+}
+.detail {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  padding: 8px;
+}
+.detail .bigic { font-size: 40px; }
+.detail .bigval { font-size: 34px; font-weight: 700; }
+.detail .arrow { color: #03a9f4; font-size: 16px; }
+.detail .mode { color: #9fd; font-size: 12px; margin-top: 6px; text-transform: uppercase; }
+.detail .ctlbtn {
+  width: 150px;
+  background: #373737;
+  border-radius: 7px;
+  padding: 7px;
+  text-align: center;
+  font-size: 12px;
+  margin: 3px 0;
+}
+.list { overflow-y: auto; flex: 1 1 auto; min-height: 0; }
+.item {
+  display: flex; justify-content: space-between; align-items: center;
+  background: #373737; color: #fff; border-radius: 6px;
+  padding: 7px 9px; margin: 4px 6px; font-size: 12px;
+}
+.item .tag { color: #888; font-size: 9px; }
+.item.focus { background: #1f4a5c; box-shadow: 0 0 0 2px #03a9f4; }
+.field { padding: 4px 8px; }
+.field-label { color: #888; font-size: 9px; letter-spacing: 1px; margin-bottom: 2px; }
+.field input {
+  width: 100%; background: #2a2a2a; border: 1px solid #444; border-radius: 4px;
+  color: #fff; font-size: 12px; padding: 5px 6px;
+}
+.field input:focus { border-color: #03a9f4; outline: none; }

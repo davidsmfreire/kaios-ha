@@ -1,16 +1,24 @@
 {
   "name": "kaios-ha",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "KaiOS Home Assistant",
   "main": "index.html",
   "scripts": {
-    "start": "./scripts/cors_proxy_up.sh && parcel index.html --out-dir build --open && cp ./manifest.webapp ./build/ && cp -r ./assets/ ./build/",
-    "build": "parcel build index.html --out-dir build && cp ./manifest.webapp ./build/ && cp -r ./assets/ ./build/"
+    "dev": "node scripts/build.mjs --serve",
+    "build": "node scripts/build.mjs",
+    "package": "npm run build && (cd build && rm -f ../application.zip && zip -r -X -q ../application.zip .)",
+    "flash": "npm run build && node scripts/flash.mjs",
+    "flash-configure": "npm run build && node scripts/flash-configure.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "devDependencies": {
-    "@babel/core": "7.2.0",
-    "parcel-bundler": "^1.6.1",
-    "typescript": "^5.5.4"
+    "esbuild": "^0.21.0",
+    "gdeploy": "git+https://gitlab.com/suborg/gdeploy.git#da611122e705a71d18e23da4208525961531ddfa",
+    "jsdom": "^24.0.0",
+    "typescript": "^5.5.4",
+    "vitest": "^1.6.0",
+    "ws": "^8.21.0"
   },
   "keywords": [
     "vanilla",
