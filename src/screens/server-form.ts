@@ -59,6 +59,11 @@ export function createServerForm(opts: {
         focusIndex = k === 'up' ? Math.max(0, focusIndex - 1) : Math.min(inputs.length - 1, focusIndex + 1);
         inputs[focusIndex].focus();
       } else if (k === 'softRight') save();
+      // Back cancels (and is consumed so the stack doesn't window.close at the
+      // first-run root form). The stack withholds 'back' while a text input holds
+      // focus — but on KaiOS the field isn't reliably auto-focused, so Back does
+      // reach here on-device; in a desktop browser with the field focused,
+      // Backspace edits text instead.
       else if (k === 'softLeft' || k === 'back') { onCancel(); return true; }
     },
   };

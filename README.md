@@ -117,7 +117,7 @@ installation goes over the **KaiOS remote debugging protocol** via ADB. [gdeploy
    ```sh
    npx gdeploy evaluate app://kaios-ha/manifest.webapp "localStorage.setItem('kaios-ha.config', JSON.stringify({version:1,activeServerId:'s1',servers:[{id:'s1',name:'Home',baseUrl:'http://homeassistant.local:8123',token:'<LONG_LIVED_TOKEN>',pages:[{id:'p1',name:'Home',tiles:[{entityId:'light.YOUR_LIGHT',name:null,icon:null}]}]}],settings:{theme:'dark'}})); location.reload()"
    ```
-   With no config the app shows a "No dashboard yet" message (not a blank screen).
+   With no config the app opens the in-app **Add server** onboarding form (not a blank screen).
 
 `npm run flash` runs `node scripts/flash.mjs` — it zips `build/`, installs it over the debugging
 protocol with a fixed app id, and **relaunches** the app (needs the system `adb` tool). The relaunch

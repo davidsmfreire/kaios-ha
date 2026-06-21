@@ -54,6 +54,9 @@ describe('server form', () => {
     expect(onCancel).toHaveBeenCalled();
   });
 
+  // On KaiOS the field isn't reliably auto-focused, so the stack routes Back to
+  // this screen (device-confirmed); treating it as Cancel keeps the root form
+  // from quitting the app. This asserts that screen contract directly.
   it('Back is treated as Cancel and is consumed (so the stack does not quit)', () => {
     const onCancel = vi.fn();
     const form = createServerForm({ existing: null, onSave: vi.fn(), onCancel });

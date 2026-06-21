@@ -8,7 +8,8 @@ export interface DomainDef {
 }
 
 export function domainOf(entityId: string): string {
-  return entityId.slice(0, entityId.indexOf('.'));
+  const i = entityId.indexOf('.');
+  return i === -1 ? entityId : entityId.slice(0, i);
 }
 
 const onOff = (s: EntityState) => (s.state === 'on' ? 'ON' : 'OFF');

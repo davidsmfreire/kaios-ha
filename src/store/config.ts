@@ -13,11 +13,13 @@ export const DEFAULT_CONFIG: AppConfig = {
 export function migrate(raw: unknown): AppConfig {
   if (typeof raw !== 'object' || raw === null) return { ...DEFAULT_CONFIG };
   const r = raw as Partial<AppConfig>;
+  // localStorage is untrusted (corruptible / hand-editable) — coerce field types
+  // so later code can safely assume servers.map(...), activeServerId as string|null.
   return {
     version: CONFIG_VERSION,
-    activeServerId: r.activeServerId ?? null,
-    servers: r.servers ?? [],
-    settings: { ...DEFAULT_CONFIG.settings, ...(r.settings ?? {}) },
+    activeServerId: typeof r.activeServerId === 'string' ? r.activeServerId : null,
+    servers: Array.isArray(r.servers) ? r.servers : [],
+    settings: { ...DEFAULT_CONFIG.settings, ...(r.settings && typeof r.settings === 'object' ? r.settings : {}) },
   };
 }
 

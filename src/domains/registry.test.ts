@@ -10,6 +10,9 @@ describe('domainOf', () => {
     expect(domainOf('light.kitchen')).toBe('light');
     expect(domainOf('binary_sensor.door')).toBe('binary_sensor');
   });
+  it('returns the whole id when there is no dot (no dropped char)', () => {
+    expect(domainOf('weird')).toBe('weird');
+  });
 });
 
 describe('getDomain', () => {

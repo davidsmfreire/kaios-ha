@@ -21,7 +21,7 @@ export function createHaSocket(opts: {
   const baseDelay = opts.reconnectMs ?? 1000;
   // __HA_DEV_PROXY__ is '' in production; in dev it's the local WS proxy origin, and
   // we tunnel the real target through it (see build.mjs / ws-dev-proxy.mjs).
-  const real = baseUrl.replace(/^http/, 'ws') + '/api/websocket';
+  const real = baseUrl.replace(/\/+$/, '').replace(/^http/, 'ws') + '/api/websocket';
   const url = __HA_DEV_PROXY__ ? `${__HA_DEV_PROXY__}/?target=${encodeURIComponent(real)}` : real;
 
   let ws: WebSocket | null = null;

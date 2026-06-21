@@ -26,6 +26,13 @@ afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 const lastSent = (type: string) => MockWS.last.sent.find((m) => m.type === type);
 
 describe('createHaSocket', () => {
+  it('builds the WS url, tolerating a trailing slash on baseUrl', () => {
+    createHaSocket({ baseUrl: 'http://h:8123', token: 't', cache: new StateCache() }).start();
+    expect(MockWS.last.url).toBe('ws://h:8123/api/websocket');
+    createHaSocket({ baseUrl: 'http://h:8123/', token: 't', cache: new StateCache() }).start();
+    expect(MockWS.last.url).toBe('ws://h:8123/api/websocket'); // no double slash
+  });
+
   it('auths with the token, then seeds states and subscribes on auth_ok', () => {
     const cache = new StateCache();
     const sock = createHaSocket({ baseUrl: 'http://h:8123', token: 'tok', cache });

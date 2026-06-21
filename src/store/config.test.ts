@@ -32,4 +32,12 @@ describe('config persistence', () => {
     expect(cfg.settings.theme).toBe('dark');
     expect(cfg.servers).toEqual([]);
   });
+
+  it('coerces corrupt field types from a tampered blob', () => {
+    localStorage.setItem(CONFIG_KEY, JSON.stringify({ activeServerId: 42, servers: 'oops', settings: 'nope' }));
+    const cfg = loadConfig();
+    expect(cfg.servers).toEqual([]); // non-array coerced
+    expect(cfg.activeServerId).toBeNull(); // non-string coerced
+    expect(cfg.settings.theme).toBe('dark'); // non-object settings ignored, defaults kept
+  });
 });
